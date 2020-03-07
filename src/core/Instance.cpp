@@ -46,8 +46,8 @@ int Instance::createInstance()
 
     if (enabledValidationLayers)
     {
-        createInfo.enabledLayerCount    = static_cast<uint32_t>(validatioinLayers.size());
-        createInfo.ppEnabledLayerNames  = validatioinLayers.data();
+        createInfo.enabledLayerCount    = static_cast<uint32_t>(validationLayers.size());
+        createInfo.ppEnabledLayerNames  = validationLayers.data();
     } else
     {
         createInfo.enabledLayerCount    = 0;
@@ -76,7 +76,7 @@ bool Instance::checkValidationLayerSupport()
     std::vector<VkLayerProperties> availableLayers(layerCount);
     vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-    for (const char* layerName : validatioinLayers)
+    for (const char* layerName : validationLayers)
     {
         bool layerFound = false;
 

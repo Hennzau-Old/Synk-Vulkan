@@ -15,12 +15,12 @@ class Instance
 
         /* static const variables */
 
-        const std::vector<const char*> validatioinLayers =
+        const std::vector<const char*> validationLayers
         {
             "VK_LAYER_KHRONOS_validation"
         };
 
-        const bool enabledValidationLayers = false;
+        static const bool enabledValidationLayers = true;
 
         /* structure */
 
