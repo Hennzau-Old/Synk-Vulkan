@@ -12,6 +12,11 @@
 #include "core/rendering/Shader.h"
 #include "core/rendering/RenderPass.h"
 #include "core/rendering/Pipeline.h"
+#include "core/rendering/Framebuffer.h"
+#include "core/rendering/CommandPool.h"
+#include "core/rendering/CommandBuffers.h"
+
+#include "core/rendering/Submit.h"
 
 const int 				FRAME_CAP = 6666;
 const int 				TICK_CAP = 60;
@@ -26,6 +31,13 @@ SwapChain         swapChain;
 Shader            shader;
 RenderPass        renderPass;
 Pipeline          pipeline;
+
+std::vector<Framebuffer> framebuffers;
+
+CommandPool       commandPool;
+CommandBuffers    commandBuffers;
+
+Submit            submit;
 
 void init()
 {
@@ -157,6 +169,84 @@ void init()
         Logger::printSuccess("main::init", "createPipeline ucceed!");
     }
 
+    Logger::init("_____FRAMEBUFFERS_____");
+
+    framebuffers.resize(swapChain.getImageViews().size());
+
+    Framebuffer::FramebufferCreateInfo framebufferCreateInfo  = {};
+    framebufferCreateInfo.logicalDevice                       = &logicalDevice;
+    framebufferCreateInfo.swapChain                           = &swapChain;
+    framebufferCreateInfo.renderPass                          = &renderPass;
+
+    for (size_t i = 0; i < swapChain.getImageViews().size(); i++)
+    {
+        std::vector<const VkImageView*> imageViews =
+        {
+            &swapChain.getImageViews()[i]
+        };
+
+        framebufferCreateInfo.imageViews = imageViews;
+
+        if (Framebuffer::createFramebuffer(&framebuffers[i], framebufferCreateInfo) != 0)
+        {
+            Logger::printError("main::init", "createFramebuffer failed!");
+        } else
+        {
+            Logger::printSuccess("main::init", "createFramebuffer[" + std::to_string(i) + "] succeed!");
+        }
+    }
+
+    Logger::exit("_____FRAMEBUFFERS_____");
+
+    CommandPool::CommandPoolCreateInfo commandPoolCreateInfo  = {};
+    commandPoolCreateInfo.physicalDevice                      = &physicalDevice;
+    commandPoolCreateInfo.logicalDevice                       = &logicalDevice;
+
+    if (CommandPool::createCommandPool(&commandPool, commandPoolCreateInfo) != 0)
+    {
+        Logger::printError("main::init", "createCommandPool failed!");
+    } else
+    {
+        Logger::printSuccess("main::init", "createCommandPool succeed!");
+    }
+
+    CommandBuffers::CommandBuffersCreateInfo commandBuffersCreateInfo = {};
+    commandBuffersCreateInfo.framebuffers                             = framebuffers;
+    commandBuffersCreateInfo.logicalDevice                            = &logicalDevice;
+    commandBuffersCreateInfo.swapChain                                = &swapChain;
+    commandBuffersCreateInfo.renderPass                               = &renderPass;
+    commandBuffersCreateInfo.pipeline                                 = &pipeline;
+    commandBuffersCreateInfo.commandPool                              = &commandPool;
+
+    if (CommandBuffers::createCommandBuffers(&commandBuffers, commandBuffersCreateInfo) != 0)
+    {
+        Logger::printError("main::init", "createCommandBuffers failed!");
+    } else
+    {
+        Logger::printSuccess("main::init", "createCommandBuffers succeed!");
+    }
+
+    commandBuffers.beginCommandBuffers();
+        commandBuffers.beginRenderPass();
+
+            commandBuffers.bindPipeline();
+            commandBuffers.draw();
+
+        commandBuffers.endRenderPass();
+    commandBuffers.endCommandBuffers();
+
+    Submit::SubmitCreateInfo submitCreateInfo = {};
+    submitCreateInfo.logicalDevice            = &logicalDevice;
+    submitCreateInfo.swapChain                = &swapChain;
+
+    if(Submit::createSubmit(&submit, submitCreateInfo) != 0)
+    {
+        Logger::printError("main::init", "createSubmit failed!");
+    } else
+    {
+        Logger::printSuccess("main::init", "createSubmit succeed");
+    }
+
     Logger::exit("_RENDERING_Components_");
 }
 
@@ -168,10 +258,19 @@ void update()
 void render()
 {
     window.update();
+
+    submit.submit(commandBuffers);
 }
 
 void clean()
 {
+    commandPool.clean();
+
+    for (auto framebuffer : framebuffers)
+    {
+        framebuffer.clean();
+    }
+
     pipeline.clean();
     renderPass.clean();
     shader.clean();
@@ -229,6 +328,8 @@ int main()
             ticks = 0;
         }
     }
+
+    vkDeviceWaitIdle(logicalDevice.getLogicalDevice());
 
     clean();
 

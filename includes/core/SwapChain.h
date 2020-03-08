@@ -58,8 +58,8 @@ class SwapChain
         inline VkPresentModeKHR&        getPresentMode  () { return m_presentMode; }
         inline VkExtent2D&              getExtent       () { return m_extent; }
 
-        inline std::vector<VkImage>&      getImages   () { return m_images; }
-        inline std::vector<VkImageView>&  getImageView() { return m_imageViews; }
+        inline std::vector<VkImage>&      getImages     () { return m_images; }
+        inline std::vector<VkImageView>&  getImageViews () { return m_imageViews; }
 
         SwapChainCreateInfo&            getInfo();
 

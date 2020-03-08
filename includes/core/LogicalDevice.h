@@ -36,6 +36,7 @@ class LogicalDevice
 
         inline VkDevice&          getLogicalDevice() { return m_logicalDevice; }
         inline VkQueue&           getGraphicsQueue() { return m_graphicsQueue; }
+        inline VkQueue&           getPresentQueue () { return m_presentQueue; }
 
         LogicalDeviceCreateInfo&  getInfo();
 
