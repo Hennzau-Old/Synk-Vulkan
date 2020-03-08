@@ -12,6 +12,11 @@ SwapChain::~SwapChain()
 
 void SwapChain::clean()
 {
+    for (auto imageView : m_imageViews)
+    {
+        vkDestroyImageView(m_info.logicalDevice->getLogicalDevice(), imageView, nullptr);
+    }
+
     vkDestroySwapchainKHR(m_info.logicalDevice->getLogicalDevice(), m_swapChain, nullptr);
 }
 
@@ -129,6 +134,39 @@ int SwapChain::createSwapChain()
 
     vkGetSwapchainImagesKHR(m_info.logicalDevice->getLogicalDevice(), m_swapChain, &imageCount, m_images.data());
 
+    m_imageFormat = m_surfaceFormat.format;
+
+    return 0;
+}
+
+int SwapChain::createImageViews()
+{
+    m_imageViews.resize(m_images.size());
+
+    VkImageViewCreateInfo createInfo  = {};
+    for (size_t i = 0; i < m_images.size(); i++)
+    {
+        createInfo.sType                  = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        createInfo.image                  = m_images[i];
+        createInfo.viewType               = VK_IMAGE_VIEW_TYPE_2D;
+        createInfo.format                 = m_imageFormat;
+        createInfo.components.r           = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.components.g           = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.components.b           = VK_COMPONENT_SWIZZLE_IDENTITY;
+        createInfo.components.a           = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+        createInfo.subresourceRange.aspectMask      = VK_IMAGE_ASPECT_COLOR_BIT;
+        createInfo.subresourceRange.baseMipLevel    = 0;
+        createInfo.subresourceRange.levelCount      = 1;
+        createInfo.subresourceRange.baseArrayLayer  = 0;
+        createInfo.subresourceRange.layerCount      = 1;
+
+        if (vkCreateImageView(m_info.logicalDevice->getLogicalDevice(), &createInfo, nullptr, &m_imageViews[i]) != VK_SUCCESS)
+        {
+            Logger::printError("SwapChain::createImageViews", "vkCreateImageView failed!");
+        }
+    }
+
     return 0;
 }
 
@@ -136,7 +174,7 @@ int SwapChain::createSwapChain(SwapChain* swapChain, const SwapChainCreateInfo& 
 {
     swapChain->setData(createInfo);
 
-    return swapChain->createSwapChain();
+    return swapChain->createSwapChain() + swapChain->createImageViews();
 }
 
 SwapChain::SwapChainSupportDetails SwapChain::querySwapCainSupport(const VkPhysicalDevice& physicalDevice, const VkSurfaceKHR& surface)
@@ -174,5 +212,5 @@ SwapChain::SwapChainSupportDetails SwapChain::querySwapCainSupport(const VkPhysi
 
 SwapChain::SwapChainCreateInfo& SwapChain::getInfo()
 {
-  return m_info;
+    return m_info;
 }

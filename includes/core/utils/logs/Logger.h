@@ -33,4 +33,7 @@ class Logger
         static void           printSuccess(const std::string& prefix, const std::string& text);
         static void           printWarning(const std::string& prefix, const std::string& text);
         static void           printError(const std::string& prefix, const std::string& text);
+
+    private:
+        static void           printTab();
 };

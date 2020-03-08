@@ -1,11 +1,17 @@
 #include <iostream>
 
+#include "core/utils/File.h"
+
 #include "core/Window.h"
 #include "core/Instance.h"
 #include "core/Surface.h"
 #include "core/PhysicalDevice.h"
 #include "core/LogicalDevice.h"
 #include "core/SwapChain.h"
+
+#include "core/rendering/Shader.h"
+#include "core/rendering/RenderPass.h"
+#include "core/rendering/Pipeline.h"
 
 const int 				FRAME_CAP = 6666;
 const int 				TICK_CAP = 60;
@@ -17,8 +23,14 @@ PhysicalDevice    physicalDevice;
 LogicalDevice     logicalDevice;
 SwapChain         swapChain;
 
+Shader            shader;
+RenderPass        renderPass;
+Pipeline          pipeline;
+
 void init()
 {
+    Logger::init("___CORE__Components___");
+
     /* window creation */
 
     Window::WindowCreateInfo windowCreateInfo = {};
@@ -99,6 +111,53 @@ void init()
     {
         Logger::printSuccess("main::init", "createSwapChain succeed!");
     }
+
+    Logger::exit("___CORE__Components___");
+    Logger::init("_RENDERING_Components_");
+
+    /* rendering */
+
+    Shader::ShaderCreateInfo shaderCreateInfo = {};
+    shaderCreateInfo.logicalDevice            = &logicalDevice;
+    shaderCreateInfo.vertexShaderCode         = File::readFile("res/shaders/vert.spv");
+    shaderCreateInfo.fragmentShaderCode       = File::readFile("res/shaders/frag.spv");
+
+    if (Shader::createShader(&shader, shaderCreateInfo) != 0)
+    {
+        Logger::printError("main::init", "createShader failed!");
+    } else
+    {
+        Logger::printSuccess("main::init", "createShader succeed!");
+    }
+
+    RenderPass::RenderPassCreateInfo renderPassCreateInfo = {};
+    renderPassCreateInfo.logicalDevice                    = &logicalDevice;
+    renderPassCreateInfo.swapChain                        = &swapChain;
+
+    if (RenderPass::createRenderPass(&renderPass, renderPassCreateInfo) != 0)
+    {
+        Logger::printError("main::init", "createRenderPass failed!");
+    } else
+    {
+        Logger::printSuccess("main::init", "createRenderPass ucceed!");
+    }
+
+    Pipeline::PipelineCreateInfo pipelineCreateInfo = {};
+    pipelineCreateInfo.logicalDevice                = &logicalDevice;
+    pipelineCreateInfo.swapChain                    = &swapChain;
+    pipelineCreateInfo.shader                       = &shader;
+    pipelineCreateInfo.renderPass                   = &renderPass;
+    pipelineCreateInfo.topology                     = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+
+    if (Pipeline::createPipeline(&pipeline, pipelineCreateInfo) != 0)
+    {
+        Logger::printError("main::init", "createPipeline failed!");
+    } else
+    {
+        Logger::printSuccess("main::init", "createPipeline ucceed!");
+    }
+
+    Logger::exit("_RENDERING_Components_");
 }
 
 void update()
@@ -113,6 +172,10 @@ void render()
 
 void clean()
 {
+    pipeline.clean();
+    renderPass.clean();
+    shader.clean();
+
     swapChain.clean();
     logicalDevice.clean();
     surface.clean();

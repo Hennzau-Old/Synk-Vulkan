@@ -54,8 +54,12 @@ class SwapChain
         inline VkSwapchainKHR&          getSwapChain() { return m_swapChain; }
 
         inline VkSurfaceFormatKHR&      getSurfaceFormat() { return m_surfaceFormat; }
+        inline VkFormat&                getImageFormat  () { return m_imageFormat; }
         inline VkPresentModeKHR&        getPresentMode  () { return m_presentMode; }
         inline VkExtent2D&              getExtent       () { return m_extent; }
+
+        inline std::vector<VkImage>&      getImages   () { return m_images; }
+        inline std::vector<VkImageView>&  getImageView() { return m_imageViews; }
 
         SwapChainCreateInfo&            getInfo();
 
@@ -68,6 +72,7 @@ class SwapChain
         /* functions */
 
         int                             createSwapChain();
+        int                             createImageViews();
 
         VkSurfaceFormatKHR              chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
         VkPresentModeKHR                chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
@@ -78,10 +83,12 @@ class SwapChain
         VkSwapchainKHR                  m_swapChain;
 
         VkSurfaceFormatKHR              m_surfaceFormat;
+        VkFormat                        m_imageFormat;
         VkPresentModeKHR                m_presentMode;
         VkExtent2D                      m_extent;
 
         std::vector<VkImage>            m_images;
+        std::vector<VkImageView>        m_imageViews;
 
         SwapChainCreateInfo             m_info;
 };
