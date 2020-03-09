@@ -2,12 +2,7 @@
 
 #include "core/utils/File.h"
 
-#include "core/Window.h"
-#include "core/Instance.h"
-#include "core/Surface.h"
-#include "core/PhysicalDevice.h"
-#include "core/LogicalDevice.h"
-#include "core/SwapChain.h"
+#include "core/CoreComponents.h"
 
 #include "core/rendering/Shader.h"
 #include "core/rendering/RenderPass.h"
@@ -21,12 +16,7 @@
 const int 				FRAME_CAP = 6666;
 const int 				TICK_CAP = 60;
 
-Window            window;
-Instance          instance;
-Surface           surface;
-PhysicalDevice    physicalDevice;
-LogicalDevice     logicalDevice;
-SwapChain         swapChain;
+CoreComponents    coreComponents;
 
 Shader            shader;
 RenderPass        renderPass;
@@ -41,96 +31,27 @@ Submit            submit;
 
 void init()
 {
-    Logger::init("___CORE__Components___");
-
-    /* window creation */
-
     Window::WindowCreateInfo windowCreateInfo = {};
     windowCreateInfo.width                    = 1280;
     windowCreateInfo.height                   = 720;
     windowCreateInfo.resizable                = GLFW_FALSE;
     windowCreateInfo.title                    = "Synk Vulkan Engine";
 
-    if (Window::createWindow(&window, windowCreateInfo) != 0)
+    CoreComponents::CoreComponentsCreateInfo coreComponentsCreateInfo = {};
+    coreComponentsCreateInfo.windowCreateInfo                         = windowCreateInfo;
+    coreComponentsCreateInfo.imageUsage                               = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+    if (CoreComponents::createCoreComponents(&coreComponents, coreComponentsCreateInfo) != 0)
     {
-        Logger::printError("main::init", "createWindow failed!");
-    } else
-    {
-        Logger::printSuccess("main::init", "createWindow succeed!");
+        Logger::printError("main::init", "createCoreComponents failed!");
     }
 
-    Instance::InstanceCreateInfo instanceCreateInfo = {};
-    instanceCreateInfo.appName                      = window.getTitle();
-    instanceCreateInfo.appVersion                   = VK_MAKE_VERSION(0, 0, 1);
-    instanceCreateInfo.engineName                   = "No Engine";
-    instanceCreateInfo.engineVersion                = VK_MAKE_VERSION(0, 0, 1);
-
-    if (Instance::createInstance(&instance, instanceCreateInfo) != 0)
-    {
-        Logger::printError("main::init", "createInstance failed!");
-    } else
-    {
-        Logger::printSuccess("main::init", "createInstance succeed!");
-    }
-
-    Surface::SurfaceCreateInfo surfaceCreateInfo  = {};
-    surfaceCreateInfo.instance                    = &instance;
-    surfaceCreateInfo.window                      = &window;
-
-    if (Surface::createSurface(&surface, surfaceCreateInfo) != 0)
-    {
-        Logger::printError("main::init", "createSurface failed!");
-    } else
-    {
-        Logger::printSuccess("main::init", "createSurface succeed!");
-    }
-
-    PhysicalDevice::PhysicalDeviceCreateInfo physicalDeviceCreateInfo = {};
-    physicalDeviceCreateInfo.instance                                 = &instance;
-    physicalDeviceCreateInfo.surface                                  = &surface;
-
-    if (PhysicalDevice::createPhysicalDevice(&physicalDevice, physicalDeviceCreateInfo) != 0)
-    {
-        Logger::printError("main::init", "createPhysicalDevice failed!");
-    } else
-    {
-        Logger::printSuccess("main::init", "createPhysicalDevice succeed!");
-    }
-
-    LogicalDevice::LogicalDeviceCreateInfo logicalDeviceCreateInfo  = {};
-    logicalDeviceCreateInfo.instance                                = &instance;
-    logicalDeviceCreateInfo.physicalDevice                          = &physicalDevice;
-
-    if (LogicalDevice::createLogicalDevice(&logicalDevice, logicalDeviceCreateInfo) != 0)
-    {
-        Logger::printError("main::init", "createLogicalDevice failed!");
-    } else
-    {
-        Logger::printSuccess("main::init", "createLogicalDevice succeed!");
-    }
-
-    SwapChain::SwapChainCreateInfo swapChainCreateInfo  = {};
-    swapChainCreateInfo.window                          = &window;
-    swapChainCreateInfo.surface                         = &surface;
-    swapChainCreateInfo.physicalDevice                  = &physicalDevice;
-    swapChainCreateInfo.logicalDevice                   = &logicalDevice;
-    swapChainCreateInfo.imageUsage                      = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-
-    if (SwapChain::createSwapChain(&swapChain, swapChainCreateInfo) != 0)
-    {
-        Logger::printError("main::init", "createSwapChain failed!");
-    } else
-    {
-        Logger::printSuccess("main::init", "createSwapChain succeed!");
-    }
-
-    Logger::exit("___CORE__Components___");
     Logger::init("_RENDERING_Components_");
 
     /* rendering */
 
     Shader::ShaderCreateInfo shaderCreateInfo = {};
-    shaderCreateInfo.logicalDevice            = &logicalDevice;
+    shaderCreateInfo.logicalDevice            = &coreComponents.getLogicalDevice();
     shaderCreateInfo.vertexShaderCode         = File::readFile("res/shaders/vert.spv");
     shaderCreateInfo.fragmentShaderCode       = File::readFile("res/shaders/frag.spv");
 
@@ -143,8 +64,8 @@ void init()
     }
 
     RenderPass::RenderPassCreateInfo renderPassCreateInfo = {};
-    renderPassCreateInfo.logicalDevice                    = &logicalDevice;
-    renderPassCreateInfo.swapChain                        = &swapChain;
+    renderPassCreateInfo.logicalDevice                    = &coreComponents.getLogicalDevice();
+    renderPassCreateInfo.swapChain                        = &coreComponents.getSwapChain();
 
     if (RenderPass::createRenderPass(&renderPass, renderPassCreateInfo) != 0)
     {
@@ -155,8 +76,8 @@ void init()
     }
 
     Pipeline::PipelineCreateInfo pipelineCreateInfo = {};
-    pipelineCreateInfo.logicalDevice                = &logicalDevice;
-    pipelineCreateInfo.swapChain                    = &swapChain;
+    pipelineCreateInfo.logicalDevice                = &coreComponents.getLogicalDevice();
+    pipelineCreateInfo.swapChain                    = &coreComponents.getSwapChain();
     pipelineCreateInfo.shader                       = &shader;
     pipelineCreateInfo.renderPass                   = &renderPass;
     pipelineCreateInfo.topology                     = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -171,18 +92,18 @@ void init()
 
     Logger::init("_____FRAMEBUFFERS_____");
 
-    framebuffers.resize(swapChain.getImageViews().size());
+    framebuffers.resize(coreComponents.getSwapChain().getImageViews().size());
 
     Framebuffer::FramebufferCreateInfo framebufferCreateInfo  = {};
-    framebufferCreateInfo.logicalDevice                       = &logicalDevice;
-    framebufferCreateInfo.swapChain                           = &swapChain;
+    framebufferCreateInfo.logicalDevice                       = &coreComponents.getLogicalDevice();
+    framebufferCreateInfo.swapChain                           = &coreComponents.getSwapChain();
     framebufferCreateInfo.renderPass                          = &renderPass;
 
-    for (size_t i = 0; i < swapChain.getImageViews().size(); i++)
+    for (size_t i = 0; i < coreComponents.getSwapChain().getImageViews().size(); i++)
     {
         std::vector<const VkImageView*> imageViews =
         {
-            &swapChain.getImageViews()[i]
+            &coreComponents.getSwapChain().getImageViews()[i]
         };
 
         framebufferCreateInfo.imageViews = imageViews;
@@ -199,8 +120,8 @@ void init()
     Logger::exit("_____FRAMEBUFFERS_____");
 
     CommandPool::CommandPoolCreateInfo commandPoolCreateInfo  = {};
-    commandPoolCreateInfo.physicalDevice                      = &physicalDevice;
-    commandPoolCreateInfo.logicalDevice                       = &logicalDevice;
+    commandPoolCreateInfo.physicalDevice                      = &coreComponents.getPhysicalDevice();
+    commandPoolCreateInfo.logicalDevice                       = &coreComponents.getLogicalDevice();
 
     if (CommandPool::createCommandPool(&commandPool, commandPoolCreateInfo) != 0)
     {
@@ -212,8 +133,8 @@ void init()
 
     CommandBuffers::CommandBuffersCreateInfo commandBuffersCreateInfo = {};
     commandBuffersCreateInfo.framebuffers                             = framebuffers;
-    commandBuffersCreateInfo.logicalDevice                            = &logicalDevice;
-    commandBuffersCreateInfo.swapChain                                = &swapChain;
+    commandBuffersCreateInfo.logicalDevice                            = &coreComponents.getLogicalDevice();
+    commandBuffersCreateInfo.swapChain                                = &coreComponents.getSwapChain();
     commandBuffersCreateInfo.renderPass                               = &renderPass;
     commandBuffersCreateInfo.pipeline                                 = &pipeline;
     commandBuffersCreateInfo.commandPool                              = &commandPool;
@@ -236,8 +157,8 @@ void init()
     commandBuffers.endCommandBuffers();
 
     Submit::SubmitCreateInfo submitCreateInfo = {};
-    submitCreateInfo.logicalDevice            = &logicalDevice;
-    submitCreateInfo.swapChain                = &swapChain;
+    submitCreateInfo.logicalDevice            = &coreComponents.getLogicalDevice();
+    submitCreateInfo.swapChain                = &coreComponents.getSwapChain();
 
     if(Submit::createSubmit(&submit, submitCreateInfo) != 0)
     {
@@ -257,13 +178,15 @@ void update()
 
 void render()
 {
-    window.update();
+    coreComponents.getWindow().update();
 
     submit.submit(commandBuffers);
 }
 
 void clean()
 {
+    submit.clean();
+
     commandPool.clean();
 
     for (auto framebuffer : framebuffers)
@@ -275,11 +198,7 @@ void clean()
     renderPass.clean();
     shader.clean();
 
-    swapChain.clean();
-    logicalDevice.clean();
-    surface.clean();
-    instance.clean();
-    window.clean();
+    coreComponents.clean();
 }
 
 int main()
@@ -298,7 +217,7 @@ int main()
     int     frames          = 0,
             ticks           = 0;
 
-    while(!window.isClosed())
+    while(!coreComponents.getWindow().isClosed())
     {
         nowTime = glfwGetTime();
         deltaTime += (nowTime - lastTickTime) / tickTime;
@@ -329,7 +248,7 @@ int main()
         }
     }
 
-    vkDeviceWaitIdle(logicalDevice.getLogicalDevice());
+    vkDeviceWaitIdle(coreComponents.getLogicalDevice().getLogicalDevice());
 
     clean();
 

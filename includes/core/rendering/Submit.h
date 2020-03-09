@@ -16,7 +16,7 @@ class Submit
 
         /* static variables */
 
-
+        const int MAX_FRAMES_IN_FLIGHT  = 2;
 
         /* structure */
 
@@ -48,12 +48,16 @@ class Submit
 
         /* functions */
 
-        int                       createSemaphores();
+        int                       createSyncObjects();
 
         /* variables */
 
-        VkSemaphore               m_imageAvailableSemaphore;
-        VkSemaphore               m_renderFinishedSemaphore;
+        std::vector<VkSemaphore>  m_imageAvailableSemaphores;
+        std::vector<VkSemaphore>  m_renderFinishedSemaphores;
+        std::vector<VkFence>      m_inFlightFences;
+        std::vector<VkFence>      m_inFlightImages;
+
+        size_t                    m_currentFrame = 0;
 
         SubmitCreateInfo          m_info;
 };
