@@ -30,8 +30,6 @@ class CommandBuffers
             LogicalDevice*                logicalDevice;
 
             SwapChain*                    swapChain;
-            RenderPass*                   renderPass;
-            Pipeline*                     pipeline;
             CommandPool*                  commandPool;
         };
 
@@ -43,15 +41,15 @@ class CommandBuffers
         void                              clean();
         void                              setData(const CommandBuffersCreateInfo& createInfo);
 
-        void                              beginCommandBuffers();
-        void                              beginRenderPass();
+        void                              beginCommandBuffers(const uint32_t& index);
+        void                              beginRenderPass(const uint32_t& index, RenderPass& renderPass);
 
-        void                              bindPipeline();
+        void                              bindPipeline(const uint32_t& index, Pipeline& pipeline);
 
-        void                              draw();
+        void                              draw(const uint32_t& index);
 
-        void                              endCommandBuffers();
-        void                              endRenderPass();
+        void                              endCommandBuffers(const uint32_t& index);
+        void                              endRenderPass(const uint32_t& index);
 
         static int                        createCommandBuffers(CommandBuffers* commandBuffers, const CommandBuffersCreateInfo& createInfo);
 

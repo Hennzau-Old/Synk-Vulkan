@@ -6,7 +6,6 @@
 #include "core/utils/logs/Logger.h"
 
 #include "core/LogicalDevice.h"
-#include "core/SwapChain.h"
 
 class RenderPass
 {
@@ -18,10 +17,23 @@ class RenderPass
 
         /* structure */
 
+        struct RenderPassAttachmentsInfo
+        {
+            VkFormat                format;
+            VkSampleCountFlagBits   samples;
+            VkAttachmentLoadOp      loadOp;
+            VkAttachmentStoreOp     storeOp;
+            VkAttachmentLoadOp      stencilLoadOp;
+            VkAttachmentStoreOp     stencilStoreOp;
+            VkImageLayout           initialLayout;
+            VkImageLayout           finalLayout;
+        };
+
         struct RenderPassCreateInfo
         {
-            LogicalDevice*        logicalDevice = nullptr;
-            SwapChain*            swapChain     = nullptr;
+            LogicalDevice*              logicalDevice   = nullptr;
+
+            RenderPassAttachmentsInfo   attachmentsInfo;
         };
 
         /* functions */

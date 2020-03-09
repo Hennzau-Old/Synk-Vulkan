@@ -20,40 +20,34 @@ void CommandBuffers::setData(const CommandBuffersCreateInfo& createInfo)
     m_info = createInfo;
 }
 
-void CommandBuffers::beginCommandBuffers()
+void CommandBuffers::beginCommandBuffers(const uint32_t& index)
 {
-    for (size_t i = 0; i < m_commandBuffers.size(); i++)
-    {
-        VkCommandBufferBeginInfo commandBufferBeginInfo = {};
-        commandBufferBeginInfo.sType                    = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        commandBufferBeginInfo.flags                    = 0;
-        commandBufferBeginInfo.pInheritanceInfo         = nullptr;
+    VkCommandBufferBeginInfo commandBufferBeginInfo = {};
+    commandBufferBeginInfo.sType                    = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    commandBufferBeginInfo.flags                    = 0;
+    commandBufferBeginInfo.pInheritanceInfo         = nullptr;
 
-        if (vkBeginCommandBuffer(m_commandBuffers[i], &commandBufferBeginInfo) != VK_SUCCESS)
-        {
-            Logger::printError("CommandBuffers::beginCommandBuffers", "vkBeginCommandBuffer[" + std::to_string(i) + "] failed!");
-        }
+    if (vkBeginCommandBuffer(m_commandBuffers[index], &commandBufferBeginInfo) != VK_SUCCESS)
+    {
+        Logger::printError("CommandBuffers::beginCommandBuffers", "vkBeginCommandBuffer[" + std::to_string(index) + "] failed!");
     }
 }
 
-void CommandBuffers::beginRenderPass()
+void CommandBuffers::beginRenderPass(const uint32_t& index, RenderPass& renderPass)
 {
-    for (size_t i = 0; i < m_commandBuffers.size(); i++)
-    {
-        VkClearValue clearColor               = { 0.0f, 0.0f, 0.0f, 1.0f };
+    VkClearValue clearColor               = { 0.0f, 0.0f, 0.0f, 1.0f };
 
-        VkRenderPassBeginInfo renderPassInfo  = {};
-        renderPassInfo.sType                  = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass             = m_info.renderPass->getRenderPass();
-        renderPassInfo.framebuffer            = m_info.framebuffers[i].getFramebuffer();
-        renderPassInfo.renderArea.offset      = {0, 0};
-        renderPassInfo.renderArea.extent      = m_info.swapChain->getExtent();
+    VkRenderPassBeginInfo renderPassInfo  = {};
+    renderPassInfo.sType                  = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassInfo.renderPass             = renderPass.getRenderPass();
+    renderPassInfo.framebuffer            = m_info.framebuffers[index].getFramebuffer();
+    renderPassInfo.renderArea.offset      = {0, 0};
+    renderPassInfo.renderArea.extent      = m_info.swapChain->getExtent();
 
-        renderPassInfo.clearValueCount        = 1;
-        renderPassInfo.pClearValues           = &clearColor;
+    renderPassInfo.clearValueCount        = 1;
+    renderPassInfo.pClearValues           = &clearColor;
 
-        vkCmdBeginRenderPass(m_commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-    }
+    vkCmdBeginRenderPass(m_commandBuffers[index], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
 
 int CommandBuffers::createCommandBuffers()
@@ -76,38 +70,26 @@ int CommandBuffers::createCommandBuffers()
     return 0;
 }
 
-void CommandBuffers::bindPipeline()
+void CommandBuffers::bindPipeline(const uint32_t& index, Pipeline& pipeline)
 {
-    for (size_t i = 0; i < m_commandBuffers.size(); i++)
-    {
-        vkCmdBindPipeline(m_commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_info.pipeline->getPipeline());
-    }
+    vkCmdBindPipeline(m_commandBuffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.getPipeline());
 }
 
-void CommandBuffers::draw()
+void CommandBuffers::draw(const uint32_t& index)
 {
-    for (size_t i = 0; i < m_commandBuffers.size(); i++)
-    {
-        vkCmdDraw(m_commandBuffers[i], 3, 1, 0, 0);
-    }
+    vkCmdDraw(m_commandBuffers[index], 3, 1, 0, 0);
 }
 
-void CommandBuffers::endRenderPass()
+void CommandBuffers::endRenderPass(const uint32_t& index)
 {
-    for (size_t i = 0; i < m_commandBuffers.size(); i++)
-    {
-        vkCmdEndRenderPass(m_commandBuffers[i]);
-    }
+    vkCmdEndRenderPass(m_commandBuffers[index]);
 }
 
-void CommandBuffers::endCommandBuffers()
+void CommandBuffers::endCommandBuffers(const uint32_t& index)
 {
-    for (size_t i = 0; i < m_commandBuffers.size(); i++)
+    if (vkEndCommandBuffer(m_commandBuffers[index]) != VK_SUCCESS)
     {
-        if (vkEndCommandBuffer(m_commandBuffers[i]) != VK_SUCCESS)
-        {
-            Logger::printError("CommandBuffers::vkEndCommandBuffer", "vkEndCommandBuffer failed!");
-        }
+        Logger::printError("CommandBuffers::vkEndCommandBuffer", "vkEndCommandBuffer[" + std::to_string(index) + "] failed!");
     }
 }
 

@@ -63,16 +63,26 @@ void init()
         Logger::printSuccess("main::init", "createShader succeed!");
     }
 
+    RenderPass::RenderPassAttachmentsInfo renderPassAttachmentsInfo = {};
+    renderPassAttachmentsInfo.format                                = coreComponents.getSwapChain().getImageFormat();
+    renderPassAttachmentsInfo.samples                               = VK_SAMPLE_COUNT_1_BIT;
+    renderPassAttachmentsInfo.loadOp                                = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    renderPassAttachmentsInfo.storeOp                               = VK_ATTACHMENT_STORE_OP_STORE;
+    renderPassAttachmentsInfo.stencilLoadOp                         = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    renderPassAttachmentsInfo.stencilStoreOp                        = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    renderPassAttachmentsInfo.initialLayout                         = VK_IMAGE_LAYOUT_UNDEFINED;
+    renderPassAttachmentsInfo.finalLayout                           = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
     RenderPass::RenderPassCreateInfo renderPassCreateInfo = {};
     renderPassCreateInfo.logicalDevice                    = &coreComponents.getLogicalDevice();
-    renderPassCreateInfo.swapChain                        = &coreComponents.getSwapChain();
+    renderPassCreateInfo.attachmentsInfo                  = renderPassAttachmentsInfo;
 
     if (RenderPass::createRenderPass(&renderPass, renderPassCreateInfo) != 0)
     {
         Logger::printError("main::init", "createRenderPass failed!");
     } else
     {
-        Logger::printSuccess("main::init", "createRenderPass ucceed!");
+        Logger::printSuccess("main::init", "createRenderPass succeed!");
     }
 
     Pipeline::PipelineCreateInfo pipelineCreateInfo = {};
@@ -80,14 +90,13 @@ void init()
     pipelineCreateInfo.swapChain                    = &coreComponents.getSwapChain();
     pipelineCreateInfo.shader                       = &shader;
     pipelineCreateInfo.renderPass                   = &renderPass;
-    pipelineCreateInfo.topology                     = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
     if (Pipeline::createPipeline(&pipeline, pipelineCreateInfo) != 0)
     {
         Logger::printError("main::init", "createPipeline failed!");
     } else
     {
-        Logger::printSuccess("main::init", "createPipeline ucceed!");
+        Logger::printSuccess("main::init", "createPipeline succeed!");
     }
 
     Logger::init("_____FRAMEBUFFERS_____");
@@ -135,8 +144,6 @@ void init()
     commandBuffersCreateInfo.framebuffers                             = framebuffers;
     commandBuffersCreateInfo.logicalDevice                            = &coreComponents.getLogicalDevice();
     commandBuffersCreateInfo.swapChain                                = &coreComponents.getSwapChain();
-    commandBuffersCreateInfo.renderPass                               = &renderPass;
-    commandBuffersCreateInfo.pipeline                                 = &pipeline;
     commandBuffersCreateInfo.commandPool                              = &commandPool;
 
     if (CommandBuffers::createCommandBuffers(&commandBuffers, commandBuffersCreateInfo) != 0)
@@ -147,14 +154,17 @@ void init()
         Logger::printSuccess("main::init", "createCommandBuffers succeed!");
     }
 
-    commandBuffers.beginCommandBuffers();
-        commandBuffers.beginRenderPass();
+    for (size_t i = 0; i < framebuffers.size(); i++)
+    {
+        commandBuffers.beginCommandBuffers(i);
+            commandBuffers.beginRenderPass(i, renderPass);
 
-            commandBuffers.bindPipeline();
-            commandBuffers.draw();
+                commandBuffers.bindPipeline(i, pipeline);
+                commandBuffers.draw(i);
 
-        commandBuffers.endRenderPass();
-    commandBuffers.endCommandBuffers();
+            commandBuffers.endRenderPass(i);
+        commandBuffers.endCommandBuffers(i);
+    }
 
     Submit::SubmitCreateInfo submitCreateInfo = {};
     submitCreateInfo.logicalDevice            = &coreComponents.getLogicalDevice();

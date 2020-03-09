@@ -26,8 +26,6 @@ class Pipeline
             SwapChain*            swapChain     = nullptr;
             Shader*               shader        = nullptr;
             RenderPass*           renderPass    = nullptr;
-
-            VkPrimitiveTopology   topology      = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         };
 
         /* functions */

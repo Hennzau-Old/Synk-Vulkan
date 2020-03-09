@@ -23,14 +23,14 @@ void RenderPass::setData(const RenderPassCreateInfo& createInfo)
 int RenderPass::createRenderPass()
 {
     VkAttachmentDescription colorAttachment = {};
-    colorAttachment.format                  = m_info.swapChain->getImageFormat();
-    colorAttachment.samples                 = VK_SAMPLE_COUNT_1_BIT;
-    colorAttachment.loadOp                  = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    colorAttachment.storeOp                 = VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttachment.stencilLoadOp           = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttachment.stencilStoreOp          = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    colorAttachment.initialLayout           = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachment.finalLayout             = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    colorAttachment.format                  = m_info.attachmentsInfo.format;
+    colorAttachment.samples                 = m_info.attachmentsInfo.samples;
+    colorAttachment.loadOp                  = m_info.attachmentsInfo.loadOp;
+    colorAttachment.storeOp                 = m_info.attachmentsInfo.storeOp;
+    colorAttachment.stencilLoadOp           = m_info.attachmentsInfo.stencilLoadOp;
+    colorAttachment.stencilStoreOp          = m_info.attachmentsInfo.stencilStoreOp;
+    colorAttachment.initialLayout           = m_info.attachmentsInfo.initialLayout;
+    colorAttachment.finalLayout             = m_info.attachmentsInfo.finalLayout;
 
     VkAttachmentReference colorAttachmentReference  = {};
     colorAttachmentReference.attachment             = 0;
