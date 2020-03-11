@@ -12,11 +12,15 @@ CoreComponents::~CoreComponents()
 
 void CoreComponents::clean()
 {
+    Logger::init("___CLEAN_____CORE_____");
+
     m_swapChain.clean();
     m_logicalDevice.clean();
     m_surface.clean();
     m_instance.clean();
     m_window.clean();
+
+    Logger::exit("___CLEAN_____CORE_____");
 }
 
 void CoreComponents::setData(const CoreComponentsCreateInfo& createInfo)

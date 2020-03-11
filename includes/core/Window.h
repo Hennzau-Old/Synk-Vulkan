@@ -34,8 +34,11 @@ class Window
         void                      clean();
         void                      setData(const WindowCreateInfo& createInfo);
 
+        void                      setFramebufferResizedStatus(const bool& status);
+
         void                      update();
 
+        static void               framebufferResizeCallback(GLFWwindow* window, int width, int height);
         static int                createWindow(Window* window, const WindowCreateInfo& createInfo);
 
         bool                      isClosed() const;
@@ -47,7 +50,8 @@ class Window
 
         inline int                isResizable () { return m_info.resizable; }
 
-        inline GLFWwindow*        getGLFWWindow() { return m_window; }
+        inline GLFWwindow*        getGLFWWindow       () { return m_window; }
+        inline bool&              isFramebufferResized() { return m_framebufferResized; }
 
         WindowCreateInfo&         getInfo();
 
@@ -64,6 +68,7 @@ class Window
         /* variables */
 
         GLFWwindow*               m_window;
+        bool                      m_framebufferResized;
 
         WindowCreateInfo          m_info;
 };

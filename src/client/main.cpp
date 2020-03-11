@@ -11,6 +11,7 @@
 #include "core/rendering/CommandPool.h"
 #include "core/rendering/CommandBuffers.h"
 
+#include "core/rendering/WindowResizeManager.h"
 #include "core/rendering/Submit.h"
 
 const int 				FRAME_CAP = 6666;
@@ -27,7 +28,23 @@ std::vector<Framebuffer> framebuffers;
 CommandPool       commandPool;
 CommandBuffers    commandBuffers;
 
+WindowResizeManager windowResizeManager;
 Submit            submit;
+
+void drawAll(CommandBuffers* commandBuffers)
+{
+    for (size_t i = 0; i < framebuffers.size(); i++)
+    {
+        commandBuffers->beginCommandBuffers(i);
+            commandBuffers->beginRenderPass(i, renderPass);
+
+                commandBuffers->bindPipeline(i, pipeline);
+                commandBuffers->draw(i);
+
+            commandBuffers->endRenderPass(i);
+        commandBuffers->endCommandBuffers(i);
+    }
+}
 
 void init()
 {
@@ -141,7 +158,7 @@ void init()
     }
 
     CommandBuffers::CommandBuffersCreateInfo commandBuffersCreateInfo = {};
-    commandBuffersCreateInfo.framebuffers                             = framebuffers;
+    commandBuffersCreateInfo.framebuffers                             = &framebuffers;
     commandBuffersCreateInfo.logicalDevice                            = &coreComponents.getLogicalDevice();
     commandBuffersCreateInfo.swapChain                                = &coreComponents.getSwapChain();
     commandBuffersCreateInfo.commandPool                              = &commandPool;
@@ -154,21 +171,30 @@ void init()
         Logger::printSuccess("main::init", "createCommandBuffers succeed!");
     }
 
-    for (size_t i = 0; i < framebuffers.size(); i++)
+    drawAll(&commandBuffers);
+
+    WindowResizeManager::WindowResizeManagerCreateInfo windowResizeManagerCreateInfo = {};
+    windowResizeManagerCreateInfo.logicalDevice     = &coreComponents.getLogicalDevice();
+    windowResizeManagerCreateInfo.swapChain         = &coreComponents.getSwapChain();
+    windowResizeManagerCreateInfo.renderPass        = &renderPass;
+    windowResizeManagerCreateInfo.pipeline          = &pipeline;
+    windowResizeManagerCreateInfo.commandBuffers    = &commandBuffers;
+    windowResizeManagerCreateInfo.framebuffers      = &framebuffers;
+    windowResizeManagerCreateInfo.drawFunction      = drawAll;
+
+    if (WindowResizeManager::createWindowResizeManager(&windowResizeManager, windowResizeManagerCreateInfo) != 0)
     {
-        commandBuffers.beginCommandBuffers(i);
-            commandBuffers.beginRenderPass(i, renderPass);
-
-                commandBuffers.bindPipeline(i, pipeline);
-                commandBuffers.draw(i);
-
-            commandBuffers.endRenderPass(i);
-        commandBuffers.endCommandBuffers(i);
+        Logger::printError("main::init", "createWindowResizeManager failed!");
+    } else
+    {
+        Logger::printSuccess("main::init", "createWindowResizeManager succeed!");
     }
 
     Submit::SubmitCreateInfo submitCreateInfo = {};
+    submitCreateInfo.window                   = &coreComponents.getWindow();
     submitCreateInfo.logicalDevice            = &coreComponents.getLogicalDevice();
     submitCreateInfo.swapChain                = &coreComponents.getSwapChain();
+    submitCreateInfo.windowResizeManager      = &windowResizeManager;
 
     if(Submit::createSubmit(&submit, submitCreateInfo) != 0)
     {
@@ -195,8 +221,12 @@ void render()
 
 void clean()
 {
+    Logger::init("___CLEAN__RESOURCES___");
+    Logger::init("___CLEAN__RENDERING___");
+
     submit.clean();
 
+    commandBuffers.clean();
     commandPool.clean();
 
     for (auto framebuffer : framebuffers)
@@ -208,12 +238,18 @@ void clean()
     renderPass.clean();
     shader.clean();
 
+    Logger::exit("___CLEAN__RENDERING___");
+
     coreComponents.clean();
+
+    Logger::exit("___CLEAN__RESOURCES___");
 }
 
 int main()
 {
     init();
+
+    Logger::init("_____GAME__ENGINE_____");
 
     double  tickTime    = 1.0 / TICK_CAP;
     double  renderTime  = 1.0 / FRAME_CAP;
@@ -257,6 +293,8 @@ int main()
             ticks = 0;
         }
     }
+
+    Logger::exit("_____GAME__ENGINE_____");
 
     vkDeviceWaitIdle(coreComponents.getLogicalDevice().getLogicalDevice());
 

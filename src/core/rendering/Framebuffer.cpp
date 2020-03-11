@@ -13,6 +13,8 @@ Framebuffer::~Framebuffer()
 void Framebuffer::clean()
 {
     vkDestroyFramebuffer(m_info.logicalDevice->getLogicalDevice(), m_framebuffer, nullptr);
+
+    Logger::printInfo("Framebuffer::clean", "vkDestroyFramebuffer!");
 }
 
 void Framebuffer::setData(const FramebufferCreateInfo& createInfo)

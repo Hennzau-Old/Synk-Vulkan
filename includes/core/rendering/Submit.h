@@ -5,10 +5,12 @@
 
 #include "core/utils/logs/Logger.h"
 
+#include "core/Window.h"
 #include "core/LogicalDevice.h"
 #include "core/SwapChain.h"
 
 #include "core/rendering/CommandBuffers.h"
+#include "core/rendering/WindowResizeManager.h"
 
 class Submit
 {
@@ -22,8 +24,10 @@ class Submit
 
         struct SubmitCreateInfo
         {
+            Window*               window;
             LogicalDevice*        logicalDevice;
             SwapChain*            swapChain;
+            WindowResizeManager*  windowResizeManager;
         };
 
         /* functions */

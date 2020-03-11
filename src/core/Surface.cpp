@@ -13,6 +13,8 @@ Surface::~Surface()
 void Surface::clean()
 {
     vkDestroySurfaceKHR(m_info.instance->getInstance(), m_surface, nullptr);
+
+    Logger::printInfo("Surface::clean", "vkDestroySurfaceKHR!");
 }
 
 void Surface::setData(const SurfaceCreateInfo& createInfo)

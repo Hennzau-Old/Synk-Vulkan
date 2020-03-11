@@ -13,6 +13,8 @@ Instance::~Instance()
 void Instance::clean()
 {
     vkDestroyInstance(m_instance, nullptr);
+
+    Logger::printInfo("Instance::clean", "vkDestroyInstance!");
 }
 
 void Instance::setData(const InstanceCreateInfo& createInfo)

@@ -14,6 +14,8 @@ void Shader::clean()
 {
     vkDestroyShaderModule(m_info.logicalDevice->getLogicalDevice(), m_vertexShader, nullptr);
     vkDestroyShaderModule(m_info.logicalDevice->getLogicalDevice(), m_fragmentShader, nullptr);
+
+    Logger::printInfo("Shader::clean", "vkDestroyShaderModule x2!");
 }
 
 void Shader::setData(const ShaderCreateInfo& createInfo)

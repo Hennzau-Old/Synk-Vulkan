@@ -12,7 +12,9 @@ CommandBuffers::~CommandBuffers()
 
 void CommandBuffers::clean()
 {
+    vkFreeCommandBuffers(m_info.logicalDevice->getLogicalDevice(), m_info.commandPool->getCommandPool(), static_cast<uint32_t>(m_commandBuffers.size()), m_commandBuffers.data());
 
+    Logger::printInfo("CommandBuffers::clean", "vkFreeCommandBuffers!");
 }
 
 void CommandBuffers::setData(const CommandBuffersCreateInfo& createInfo)
@@ -40,7 +42,7 @@ void CommandBuffers::beginRenderPass(const uint32_t& index, RenderPass& renderPa
     VkRenderPassBeginInfo renderPassInfo  = {};
     renderPassInfo.sType                  = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass             = renderPass.getRenderPass();
-    renderPassInfo.framebuffer            = m_info.framebuffers[index].getFramebuffer();
+    renderPassInfo.framebuffer            = m_info.framebuffers->at(index).getFramebuffer();
     renderPassInfo.renderArea.offset      = {0, 0};
     renderPassInfo.renderArea.extent      = m_info.swapChain->getExtent();
 
@@ -52,7 +54,7 @@ void CommandBuffers::beginRenderPass(const uint32_t& index, RenderPass& renderPa
 
 int CommandBuffers::createCommandBuffers()
 {
-    m_commandBuffers.resize(m_info.framebuffers.size());
+    m_commandBuffers.resize(m_info.framebuffers->size());
 
     VkCommandBufferAllocateInfo commandBufferAllocInfo  = {};
     commandBufferAllocInfo.sType                        = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;

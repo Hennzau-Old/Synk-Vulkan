@@ -18,6 +18,8 @@ void Submit::clean()
         vkDestroySemaphore(m_info.logicalDevice->getLogicalDevice(), m_imageAvailableSemaphores[i], nullptr);
         vkDestroyFence(m_info.logicalDevice->getLogicalDevice(), m_inFlightFences[i], nullptr);
     }
+
+    Logger::printInfo("Submit::clean", "destroySyncObjects!");
 }
 
 void Submit::setData(const SubmitCreateInfo& createInfo)
@@ -30,7 +32,16 @@ void Submit::submit(CommandBuffers& commandBuffers)
     vkWaitForFences(m_info.logicalDevice->getLogicalDevice(), 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
 
     uint32_t imageIndex;
-    vkAcquireNextImageKHR(m_info.logicalDevice->getLogicalDevice(), m_info.swapChain->getSwapChain(), UINT64_MAX, m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, &imageIndex);
+    VkResult result = vkAcquireNextImageKHR(m_info.logicalDevice->getLogicalDevice(), m_info.swapChain->getSwapChain(), UINT64_MAX, m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, &imageIndex);
+
+    if (result == VK_ERROR_OUT_OF_DATE_KHR)
+    {
+        m_info.windowResizeManager->recreateComponents();
+        return;
+    } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+    {
+        Logger::printError("Submit::submit", "vkAcquireNextImageKHR failed!");
+    }
 
     if (m_inFlightImages[imageIndex] != VK_NULL_HANDLE)
     {
@@ -85,7 +96,17 @@ void Submit::submit(CommandBuffers& commandBuffers)
     presentInfo.pImageIndices       = &imageIndex;
     presentInfo.pResults            = nullptr;
 
-    vkQueuePresentKHR(m_info.logicalDevice->getPresentQueue(), &presentInfo);
+    result = vkQueuePresentKHR(m_info.logicalDevice->getPresentQueue(), &presentInfo);
+
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_info.window->isFramebufferResized())
+    {
+        m_info.window->setFramebufferResizedStatus(false);
+        m_info.windowResizeManager->recreateComponents();
+        return;
+    } else if (result != VK_SUCCESS)
+    {
+        Logger::printError("Submit::submit", "vkQueuePresentKHR failed!");
+    }
 
     m_currentFrame++;
     if (m_currentFrame >= MAX_FRAMES_IN_FLIGHT) m_currentFrame = 0;

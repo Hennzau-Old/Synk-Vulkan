@@ -14,11 +14,18 @@ void Window::clean()
 {
     glfwDestroyWindow(m_window);
     glfwTerminate();
+
+    Logger::printInfo("Window::clean", "glfwDestroyWindow!");
 }
 
 void Window::setData(const WindowCreateInfo& createInfo)
 {
     m_info = createInfo;
+}
+
+void Window::setFramebufferResizedStatus(const bool& status)
+{
+    m_framebufferResized = status;
 }
 
 int Window::createWindow()
@@ -42,12 +49,24 @@ int Window::createWindow()
         return 1;
     }
 
+    glfwSetWindowUserPointer(m_window, this);
+    glfwSetFramebufferSizeCallback(m_window, framebufferResizeCallback);
+
     return 0;
 }
 
 void Window::update()
 {
     glfwPollEvents();
+}
+
+void Window::framebufferResizeCallback(GLFWwindow* window, int width, int height)
+{
+    auto display = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
+    display->setFramebufferResizedStatus(true);
+
+    display->getInfo().width   = width;
+    display->getInfo().height  = height;
 }
 
 int Window::createWindow(Window* window, const WindowCreateInfo& createInfo)

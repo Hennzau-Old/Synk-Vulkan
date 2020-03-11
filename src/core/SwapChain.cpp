@@ -17,7 +17,11 @@ void SwapChain::clean()
         vkDestroyImageView(m_info.logicalDevice->getLogicalDevice(), imageView, nullptr);
     }
 
+    Logger::printInfo("SwapChain::clean", "vkDestroyImageView!");
+
     vkDestroySwapchainKHR(m_info.logicalDevice->getLogicalDevice(), m_swapChain, nullptr);
+
+    Logger::printInfo("SwapChain::clean", "vkDestroySwapchainKHR!");
 }
 
 void SwapChain::setData(const SwapChainCreateInfo& createInfo)
@@ -47,7 +51,8 @@ VkPresentModeKHR SwapChain::chooseSwapPresentMode(const std::vector<VkPresentMod
             return availablePresentMode;
         }
     }
-    
+
+    // return VK_PRESENT_MODE_FIFO_KHR;
     return VK_PRESENT_MODE_IMMEDIATE_KHR;
 }
 

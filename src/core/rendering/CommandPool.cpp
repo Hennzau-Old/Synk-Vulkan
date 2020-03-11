@@ -13,6 +13,8 @@ CommandPool::~CommandPool()
 void CommandPool::clean()
 {
     vkDestroyCommandPool(m_info.logicalDevice->getLogicalDevice(), m_commandPool, nullptr);
+
+    Logger::printInfo("CommandPool::clean", "vkDestroyCommandPool!");
 }
 
 void CommandPool::setData(const CommandPoolCreateInfo& createInfo)

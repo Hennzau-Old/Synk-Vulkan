@@ -13,7 +13,12 @@ Pipeline::~Pipeline()
 void Pipeline::clean()
 {
     vkDestroyPipeline(m_info.logicalDevice->getLogicalDevice(), m_pipeline, nullptr);
+
+    Logger::printInfo("Pipeline::clean", "vkDestroyPipeline!");
+
     vkDestroyPipelineLayout(m_info.logicalDevice->getLogicalDevice(), m_pipelineLayout, nullptr);
+
+    Logger::printInfo("Pipeline::clean", "vkDestroyPipelineLayout!");
 }
 
 void Pipeline::setData(const PipelineCreateInfo& createInfo)

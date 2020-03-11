@@ -13,6 +13,8 @@ RenderPass::~RenderPass()
 void RenderPass::clean()
 {
     vkDestroyRenderPass(m_info.logicalDevice->getLogicalDevice(), m_renderPass, nullptr);
+
+    Logger::printInfo("RenderPass::clean", "vkDestroyRenderPass!");
 }
 
 void RenderPass::setData(const RenderPassCreateInfo& createInfo)

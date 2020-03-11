@@ -13,6 +13,8 @@ LogicalDevice::~LogicalDevice()
 void LogicalDevice::clean()
 {
     vkDestroyDevice(m_logicalDevice, nullptr);
+
+    Logger::printInfo("LogicalDevice::clean", "vkDestroyDevice!");
 }
 
 void LogicalDevice::setData(const LogicalDeviceCreateInfo& createInfo)

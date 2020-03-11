@@ -25,7 +25,7 @@ class CommandBuffers
 
         struct CommandBuffersCreateInfo
         {
-            std::vector<Framebuffer>      framebuffers;
+            std::vector<Framebuffer>*     framebuffers;
 
             LogicalDevice*                logicalDevice;
 
