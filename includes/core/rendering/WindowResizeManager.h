@@ -26,15 +26,15 @@ class WindowResizeManager
 
         struct WindowResizeManagerCreateInfo
         {
-            LogicalDevice*            logicalDevice;
-            SwapChain*                swapChain;
-            RenderPass*               renderPass;
-            Pipeline*                 pipeline;
-            CommandBuffers*           commandBuffers;
+            LogicalDevice*            logicalDevice   = nullptr;
+            SwapChain*                swapChain       = nullptr;
+            RenderPass*               renderPass      = nullptr;
+            Pipeline*                 pipeline        = nullptr;
+            CommandBuffers*           commandBuffers  = nullptr;
 
-            std::vector<Framebuffer>* framebuffers;
+            std::vector<Framebuffer>* framebuffers    = nullptr;
 
-            FnPtr                     drawFunction;            
+            FnPtr                     drawFunction;
         };
 
         /* functions */

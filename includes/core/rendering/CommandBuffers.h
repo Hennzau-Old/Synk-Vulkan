@@ -25,12 +25,12 @@ class CommandBuffers
 
         struct CommandBuffersCreateInfo
         {
-            std::vector<Framebuffer>*     framebuffers;
+            std::vector<Framebuffer>*     framebuffers  = nullptr;
 
-            LogicalDevice*                logicalDevice;
+            LogicalDevice*                logicalDevice = nullptr;
 
-            SwapChain*                    swapChain;
-            CommandPool*                  commandPool;
+            SwapChain*                    swapChain     = nullptr;
+            CommandPool*                  commandPool   = nullptr;
         };
 
         /* functions */

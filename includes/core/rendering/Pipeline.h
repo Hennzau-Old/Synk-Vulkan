@@ -20,12 +20,23 @@ class Pipeline
 
         /* structure */
 
+        struct RasterizationInfo
+        {
+            VkPolygonMode   polygonMode;
+            VkCullModeFlags cullMode;
+            VkFrontFace     frontFace;
+
+            float           lineWidth;
+        };
+
         struct PipelineCreateInfo
         {
             LogicalDevice*        logicalDevice = nullptr;
             SwapChain*            swapChain     = nullptr;
             Shader*               shader        = nullptr;
             RenderPass*           renderPass    = nullptr;
+
+            RasterizationInfo     rasterizationInfo;
         };
 
         /* functions */

@@ -24,10 +24,10 @@ class Submit
 
         struct SubmitCreateInfo
         {
-            Window*               window;
-            LogicalDevice*        logicalDevice;
-            SwapChain*            swapChain;
-            WindowResizeManager*  windowResizeManager;
+            Window*               window                = nullptr;
+            LogicalDevice*        logicalDevice         = nullptr;
+            SwapChain*            swapChain             = nullptr;
+            WindowResizeManager*  windowResizeManager   = nullptr;
         };
 
         /* functions */

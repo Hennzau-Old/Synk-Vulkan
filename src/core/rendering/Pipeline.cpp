@@ -63,10 +63,10 @@ int Pipeline::createPipeline()
     rasterizer.sType                                  = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rasterizer.depthClampEnable                       = VK_FALSE;
     rasterizer.rasterizerDiscardEnable                = VK_FALSE;
-    rasterizer.polygonMode                            = VK_POLYGON_MODE_FILL;
-    rasterizer.lineWidth                              = 1.0f;
-    rasterizer.cullMode                               = VK_CULL_MODE_BACK_BIT;
-    rasterizer.frontFace                              = VK_FRONT_FACE_CLOCKWISE;
+    rasterizer.polygonMode                            = m_info.rasterizationInfo.polygonMode;
+    rasterizer.cullMode                               = m_info.rasterizationInfo.cullMode;
+    rasterizer.frontFace                              = m_info.rasterizationInfo.frontFace;
+    rasterizer.lineWidth                              = m_info.rasterizationInfo.lineWidth;
     rasterizer.depthBiasEnable                        = VK_FALSE;
     rasterizer.depthBiasConstantFactor                = 0.0f;
     rasterizer.depthBiasClamp                         = 0.0f;
