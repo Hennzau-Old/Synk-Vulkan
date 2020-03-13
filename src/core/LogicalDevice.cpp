@@ -22,6 +22,11 @@ void LogicalDevice::setData(const LogicalDeviceCreateInfo& createInfo)
     m_info = createInfo;
 }
 
+void LogicalDevice::wait() const
+{
+    vkDeviceWaitIdle(m_logicalDevice);
+}
+
 int LogicalDevice::createLogicalDevice()
 {
     auto indices = m_info.physicalDevice->getQueueFamilies();

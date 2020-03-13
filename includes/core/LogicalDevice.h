@@ -32,6 +32,8 @@ class LogicalDevice
         void                      clean();
         void                      setData(const LogicalDeviceCreateInfo& createInfo);
 
+        void                      wait() const;
+
         static int                createLogicalDevice(LogicalDevice* logicalDevice, const LogicalDeviceCreateInfo& createInfo);
 
         inline VkDevice&          getLogicalDevice() { return m_logicalDevice; }

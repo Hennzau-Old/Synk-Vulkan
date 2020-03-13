@@ -12,6 +12,8 @@ Scene::~Scene()
 
 void Scene::clean()
 {
+    Logger::init("___CLEAN__RENDERING___");
+
     m_submit.clean();
 
     m_commandBuffers.clean();
@@ -25,6 +27,8 @@ void Scene::clean()
     m_pipeline.clean();
     m_renderPass.clean();
     m_shader.clean();
+
+    Logger::exit("___CLEAN__RENDERING___");
 }
 
 void Scene::setData(const SceneCreateInfo& createInfo)
@@ -81,6 +85,7 @@ int Scene::createPipeline()
     pipelineCreateInfo.shader                       = &m_shader;
     pipelineCreateInfo.renderPass                   = &m_renderPass;
     pipelineCreateInfo.rasterizationInfo            = m_info.rasterizationInfo;
+    pipelineCreateInfo.vertexInputInfo              = m_info.vertexInputInfo;
 
     if (Pipeline::createPipeline(&m_pipeline, pipelineCreateInfo) != 0)
     {

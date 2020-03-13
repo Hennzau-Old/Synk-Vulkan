@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "core/maths/maths.h"
 #include "core/utils/File.h"
 
 #include "core/CoreComponents.h"
@@ -43,9 +44,42 @@ void init()
         Logger::printError("main::init", "createCoreComponents failed!");
     }
 
+    /* vertex binding */
+
+    std::vector<float> vertices =
+    {
+        +0.0f, -0.5f, 0.0f,    1.0f, 0.0f, 0.0f, 1.0f,
+        +0.5f, +0.5f, 0.0f,    0.0f, 1.0f, 0.0f, 1.0f,
+        -0.5f, +0.5f, 0.0f,    0.0f, 0.0f, 1.0f, 1.0f,
+    };
+
+    VkVertexInputBindingDescription vertexBindingDescription  = {};
+    vertexBindingDescription.binding                          = 0;
+    vertexBindingDescription.stride                           = 7 * sizeof(float);
+    vertexBindingDescription.inputRate                        = VK_VERTEX_INPUT_RATE_VERTEX;
+
+    /* attributs description */
+
+    std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
+    attributeDescriptions.resize(2);
+
+    attributeDescriptions[0].binding                                          = 0;
+    attributeDescriptions[0].location                                         = 0;
+    attributeDescriptions[0].format                                           = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescriptions[0].offset                                           = 0.0f;     //offset of vertex positions
+
+    attributeDescriptions[1].binding                                          = 0;
+    attributeDescriptions[1].location                                         = 1;
+    attributeDescriptions[1].format                                           = VK_FORMAT_R32G32B32A32_SFLOAT;
+    attributeDescriptions[1].offset                                           = 3 * sizeof(float);     //offset of vertex positions
+
+    /* shaders */
+
     Shader::ShaderCreateInfo shaderCreateInfo = {};
-    shaderCreateInfo.vertexShaderCode         = File::readFile("res/shaders/vert.spv");
-    shaderCreateInfo.fragmentShaderCode       = File::readFile("res/shaders/frag.spv");
+    shaderCreateInfo.vertexShaderCode         = File::readFile("res/shaders/spir-v/main.vert");
+    shaderCreateInfo.fragmentShaderCode       = File::readFile("res/shaders/spir-v/main.frag");
+
+    /* renderpass */
 
     RenderPass::RenderPassAttachmentsInfo renderPassAttachmentsInfo = {};
     renderPassAttachmentsInfo.format                                = coreComponents.getSwapChain().getImageFormat();
@@ -57,17 +91,26 @@ void init()
     renderPassAttachmentsInfo.initialLayout                         = VK_IMAGE_LAYOUT_UNDEFINED;
     renderPassAttachmentsInfo.finalLayout                           = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
+    /* pipeline */
+
     Pipeline::RasterizationInfo rasterizationInfo = {};
     rasterizationInfo.polygonMode                 = VK_POLYGON_MODE_FILL;
     rasterizationInfo.cullMode                    = VK_CULL_MODE_BACK_BIT;
     rasterizationInfo.frontFace                   = VK_FRONT_FACE_CLOCKWISE;
     rasterizationInfo.lineWidth                   = 1.0f;
 
+    Pipeline::VertexInputInfo vertexInputInfo   = {};
+    vertexInputInfo.vertexBindingDescription    = vertexBindingDescription;
+    vertexInputInfo.vertexAttributeDescriptions = attributeDescriptions;
+
+    /* scene */
+
     Scene::SceneCreateInfo sceneCreateInfo      = {};
     sceneCreateInfo.coreComponents              = &coreComponents;
     sceneCreateInfo.shaderCreateInfo            = shaderCreateInfo;
     sceneCreateInfo.renderPassAttachmentsInfo   = renderPassAttachmentsInfo;
     sceneCreateInfo.rasterizationInfo           = rasterizationInfo;
+    sceneCreateInfo.vertexInputInfo             = vertexInputInfo;
     sceneCreateInfo.drawFunction                = drawAll;
 
     if (Scene::createScene(&scene, sceneCreateInfo) != 0)
@@ -94,12 +137,8 @@ void render()
 void clean()
 {
     Logger::init("___CLEAN__RESOURCES___");
-    Logger::init("___CLEAN__RENDERING___");
 
     scene.clean();
-
-    Logger::exit("___CLEAN__RENDERING___");
-
     coreComponents.clean();
 
     Logger::exit("___CLEAN__RESOURCES___");
@@ -156,7 +195,7 @@ int main()
 
     Logger::exit("_____GAME__ENGINE_____");
 
-    vkDeviceWaitIdle(coreComponents.getLogicalDevice().getLogicalDevice());
+    coreComponents.getLogicalDevice().wait();
 
     clean();
 

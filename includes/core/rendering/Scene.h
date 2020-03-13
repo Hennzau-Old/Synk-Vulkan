@@ -39,6 +39,7 @@ class Scene
             Shader::ShaderCreateInfo              shaderCreateInfo;
             RenderPass::RenderPassAttachmentsInfo renderPassAttachmentsInfo;
             Pipeline::RasterizationInfo           rasterizationInfo;
+            Pipeline::VertexInputInfo             vertexInputInfo;
             WindowResizeManager::FnPtr            drawFunction;
         };
 

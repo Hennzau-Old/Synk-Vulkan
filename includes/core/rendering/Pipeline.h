@@ -29,6 +29,12 @@ class Pipeline
             float           lineWidth;
         };
 
+        struct VertexInputInfo
+        {
+            VkVertexInputBindingDescription                 vertexBindingDescription;
+            std::vector<VkVertexInputAttributeDescription>  vertexAttributeDescriptions;
+        };
+
         struct PipelineCreateInfo
         {
             LogicalDevice*        logicalDevice = nullptr;
@@ -37,6 +43,7 @@ class Pipeline
             RenderPass*           renderPass    = nullptr;
 
             RasterizationInfo     rasterizationInfo;
+            VertexInputInfo       vertexInputInfo;
         };
 
         /* functions */

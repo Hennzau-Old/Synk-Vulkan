@@ -22,7 +22,7 @@ void WindowResizeManager::setData(const WindowResizeManagerCreateInfo& createInf
 
 void WindowResizeManager::recreateComponents()
 {
-    vkDeviceWaitIdle(m_info.logicalDevice->getLogicalDevice());
+    m_info.logicalDevice->wait();
 
     for (size_t i = 0; i < m_info.framebuffers->size(); i++)
     {
