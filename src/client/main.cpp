@@ -4,23 +4,35 @@
 #include "core/utils/File.h"
 
 #include "core/CoreComponents.h"
+
+#include "core/rendering/Mesh.h"
 #include "core/rendering/Scene.h"
 
 const int 				FRAME_CAP = 6666;
 const int 				TICK_CAP = 60;
 
 CoreComponents    coreComponents;
+
+Mesh              mesh;
 Scene             scene;
 
 void drawAll(CommandBuffers* commandBuffers)
 {
+    std::vector<VkBuffer> vertexBuffers =
+    {
+        mesh.getVertexBuffer()
+    };
+
     for (size_t i = 0; i < scene.getFramebuffers().size(); i++)
     {
         commandBuffers->beginCommandBuffers(i);
             commandBuffers->beginRenderPass(i, scene.getRenderPass());
 
                 commandBuffers->bindPipeline(i, scene.getPipeline());
-                commandBuffers->draw(i);
+
+                commandBuffers->bindVertexBuffer(i, vertexBuffers);
+                commandBuffers->bindIndexBuffer(i, mesh.getIndexBuffer());
+                commandBuffers->draw(i, 12);
 
             commandBuffers->endRenderPass(i);
         commandBuffers->endCommandBuffers(i);
@@ -44,14 +56,65 @@ void init()
         Logger::printError("main::init", "createCoreComponents failed!");
     }
 
-    /* vertex binding */
+    /* commandpool transfer */
+
+    CommandPool transferCommandPool;
+
+    CommandPool::CommandPoolCreateInfo commandPoolCreateInfo  = {};
+    commandPoolCreateInfo.physicalDevice                      = &coreComponents.getPhysicalDevice();
+    commandPoolCreateInfo.logicalDevice                       = &coreComponents.getLogicalDevice();
+    commandPoolCreateInfo.queueFamilyIndex                    = coreComponents.getPhysicalDevice().getQueueFamilies().graphicsFamily.value();
+
+    if (CommandPool::createCommandPool(&transferCommandPool, commandPoolCreateInfo) != 0)
+    {
+        Logger::printError("main::init", "createCommandPool failed!");
+    } else
+    {
+        Logger::printInfo("main::init", "createCommandPool!");
+    }
+
+    /* vertex buffer */
 
     std::vector<float> vertices =
     {
-        +0.0f, -0.5f, 0.0f,    1.0f, 0.0f, 0.0f, 1.0f,
-        +0.5f, +0.5f, 0.0f,    0.0f, 1.0f, 0.0f, 1.0f,
-        -0.5f, +0.5f, 0.0f,    0.0f, 0.0f, 1.0f, 1.0f,
+        -1.0f, +0.0f, 0.0f,    1.0f, 0.0f, 0.0f, 1.0f,
+        +0.0f, -1.0f, 0.0f,    0.0f, 1.0f, 0.0f, 1.0f,
+        -1.0f, -1.0f, 0.0f,    0.0f, 0.0f, 1.0f, 1.0f,
+        +0.0f, +0.0f, 0.0f,    0.0f, 0.0f, 1.0f, 1.0f,
+
+        +1.0f, +0.0f, 0.0f,    0.0f, 1.0f, 0.0f, 1.0f,
+        -0.0f, +1.0f, 0.0f,    1.0f, 0.0f, 0.0f, 1.0f,
+        +1.0f, +1.0f, 0.0f,    0.0f, 0.0f, 1.0f, 1.0f,
+        +0.0f, +0.0f, 0.0f,    0.0f, 0.0f, 1.0f, 1.0f,
     };
+
+    std::vector<uint16_t> indices =
+    {
+        0, 1, 2,
+        0, 3, 1,
+
+        4, 5, 6,
+        4, 7, 5,
+    };
+
+    Mesh::MeshCreateInfo meshCreateInfo = {};
+    meshCreateInfo.physicalDevice       = &coreComponents.getPhysicalDevice();
+    meshCreateInfo.logicalDevice        = &coreComponents.getLogicalDevice();
+    meshCreateInfo.commandPool          = &transferCommandPool;
+    meshCreateInfo.vertices             = vertices;
+    meshCreateInfo.indices              = indices;
+
+    if (Mesh::createMesh(&mesh, meshCreateInfo) != 0)
+    {
+        Logger::printError("main::init", "createMesh failed!");
+    } else
+    {
+        Logger::printSuccess("main::init", "createMesh succeed!");
+    }
+
+    transferCommandPool.clean();
+
+    /*vertex binding */
 
     VkVertexInputBindingDescription vertexBindingDescription  = {};
     vertexBindingDescription.binding                          = 0;
@@ -95,7 +158,7 @@ void init()
 
     Pipeline::RasterizationInfo rasterizationInfo = {};
     rasterizationInfo.polygonMode                 = VK_POLYGON_MODE_FILL;
-    rasterizationInfo.cullMode                    = VK_CULL_MODE_BACK_BIT;
+    rasterizationInfo.cullMode                    = VK_CULL_MODE_FRONT_BIT;
     rasterizationInfo.frontFace                   = VK_FRONT_FACE_CLOCKWISE;
     rasterizationInfo.lineWidth                   = 1.0f;
 
@@ -139,6 +202,9 @@ void clean()
     Logger::init("___CLEAN__RESOURCES___");
 
     scene.clean();
+
+    mesh.clean();
+
     coreComponents.clean();
 
     Logger::exit("___CLEAN__RESOURCES___");

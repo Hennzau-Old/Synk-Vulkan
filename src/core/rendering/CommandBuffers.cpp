@@ -77,9 +77,27 @@ void CommandBuffers::bindPipeline(const uint32_t& index, Pipeline& pipeline)
     vkCmdBindPipeline(m_commandBuffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.getPipeline());
 }
 
-void CommandBuffers::draw(const uint32_t& index)
+
+void CommandBuffers::bindVertexBuffer(const uint32_t& index, std::vector<VkBuffer>& vertexBuffers)
 {
-    vkCmdDraw(m_commandBuffers[index], 3, 1, 0, 0);
+    VkDeviceSize offsets[] =
+    {
+        0
+    };
+
+    uint32_t binding = static_cast<uint32_t>(vertexBuffers.size());
+
+    vkCmdBindVertexBuffers(m_commandBuffers[index], 0, binding, vertexBuffers.data(), offsets);
+}
+
+void CommandBuffers::bindIndexBuffer(const uint32_t& index, VkBuffer& indexBuffer)
+{
+    vkCmdBindIndexBuffer(m_commandBuffers[index], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+}
+
+void CommandBuffers::draw(const uint32_t& index, const size_t& drawCount)
+{
+    vkCmdDrawIndexed(m_commandBuffers[index], static_cast<uint32_t>(drawCount), 1, 0, 0, 0);
 }
 
 void CommandBuffers::endRenderPass(const uint32_t& index)

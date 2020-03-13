@@ -20,8 +20,10 @@ class CommandPool
 
         struct CommandPoolCreateInfo
         {
-            PhysicalDevice*       physicalDevice  = nullptr;
-            LogicalDevice*        logicalDevice   = nullptr;
+            PhysicalDevice*       physicalDevice    = nullptr;
+            LogicalDevice*        logicalDevice     = nullptr;
+
+            uint32_t              queueFamilyIndex  = 0;
         };
 
         /* functions */

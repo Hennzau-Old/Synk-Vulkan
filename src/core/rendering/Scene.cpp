@@ -141,6 +141,7 @@ int Scene::createCommandPool()
     CommandPool::CommandPoolCreateInfo commandPoolCreateInfo  = {};
     commandPoolCreateInfo.physicalDevice                      = &m_info.coreComponents->getPhysicalDevice();
     commandPoolCreateInfo.logicalDevice                       = &m_info.coreComponents->getLogicalDevice();
+    commandPoolCreateInfo.queueFamilyIndex                    = m_info.coreComponents->getPhysicalDevice().getQueueFamilies().graphicsFamily.value();
 
     if (CommandPool::createCommandPool(&m_commandPool, commandPoolCreateInfo) != 0)
     {

@@ -26,7 +26,7 @@ int CommandPool::createCommandPool()
 {
     VkCommandPoolCreateInfo commandPoolCreateInfo = {};
     commandPoolCreateInfo.sType                   = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    commandPoolCreateInfo.queueFamilyIndex        = m_info.physicalDevice->getQueueFamilies().graphicsFamily.value();
+    commandPoolCreateInfo.queueFamilyIndex        = m_info.queueFamilyIndex;
     commandPoolCreateInfo.flags                   = 0;
 
     if (vkCreateCommandPool(m_info.logicalDevice->getLogicalDevice(), &commandPoolCreateInfo, nullptr, &m_commandPool) != VK_SUCCESS)

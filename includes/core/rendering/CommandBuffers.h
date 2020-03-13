@@ -13,6 +13,8 @@
 #include "core/rendering/Framebuffer.h"
 #include "core/rendering/CommandPool.h"
 
+#include "core/rendering/Mesh.h"
+
 class CommandBuffers
 {
     public:
@@ -45,8 +47,10 @@ class CommandBuffers
         void                              beginRenderPass(const uint32_t& index, RenderPass& renderPass);
 
         void                              bindPipeline(const uint32_t& index, Pipeline& pipeline);
+        void                              bindVertexBuffer(const uint32_t& index, std::vector<VkBuffer>& vertexBuffers);
+        void                              bindIndexBuffer(const uint32_t& index, VkBuffer& indexBuffer);
 
-        void                              draw(const uint32_t& index);
+        void                              draw(const uint32_t& index, const size_t& drawCount);
 
         void                              endCommandBuffers(const uint32_t& index);
         void                              endRenderPass(const uint32_t& index);
