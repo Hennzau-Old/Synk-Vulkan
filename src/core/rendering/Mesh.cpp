@@ -12,21 +12,8 @@ Mesh::~Mesh()
 
 void Mesh::clean()
 {
-    vkDestroyBuffer(m_info.logicalDevice->getLogicalDevice(), m_vertexBuffer, nullptr);
-
-    Logger::printInfo("Mesh::clean", "vkDestroyBuffer!");
-
-    vkFreeMemory(m_info.logicalDevice->getLogicalDevice(), m_vertexBufferMemory, nullptr);
-
-    Logger::printInfo("Mesh::clean", "vkFreeMemory!");
-
-    vkDestroyBuffer(m_info.logicalDevice->getLogicalDevice(), m_indexBuffer, nullptr);
-
-    Logger::printInfo("Mesh::clean", "vkDestroyBuffer!");
-
-    vkFreeMemory(m_info.logicalDevice->getLogicalDevice(), m_indexBufferMemory, nullptr);
-
-    Logger::printInfo("Mesh::clean", "vkFreeMemory!");
+    m_vertexBuffer.clean();
+    m_indexBuffer.clean();
 }
 
 void Mesh::setData(const MeshCreateInfo& createInfo)
@@ -34,27 +21,43 @@ void Mesh::setData(const MeshCreateInfo& createInfo)
     m_info = createInfo;
 }
 
-int Mesh::createMesh()
+int Mesh::createVertexBuffer()
 {
     VkDeviceSize bufferSize = sizeof(m_info.vertices[0]) * m_info.vertices.size();
 
-    VkBuffer        stagingBuffer;
-    VkDeviceMemory  stagingBufferMemory;
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+    Buffer stagingBuffer;
 
-    void* data;
-    vkMapMemory(m_info.logicalDevice->getLogicalDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+    Buffer::BufferCreateInfo stagingBufferCreateInfo = {};
+    stagingBufferCreateInfo.physicalDevice           = m_info.physicalDevice;
+    stagingBufferCreateInfo.logicalDevice            = m_info.logicalDevice;
+    stagingBufferCreateInfo.commandPool              = m_info.commandPool;
+    stagingBufferCreateInfo.size                     = bufferSize;
+    stagingBufferCreateInfo.usage                    = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    stagingBufferCreateInfo.properties               = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
-        memcpy(data, m_info.vertices.data(), (size_t) bufferSize);
+    if (Buffer::createBuffer(&stagingBuffer, stagingBufferCreateInfo) != 0)
+    {
+        Logger::printError("Mesh::createVertexBuffer", "createBuffer[stagingBuffer] failed!");
 
-    vkUnmapMemory(m_info.logicalDevice->getLogicalDevice(), stagingBufferMemory);
+        return 1;
+    }
 
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_vertexBuffer, m_vertexBufferMemory);
+    stagingBuffer.copyData(m_info.vertices);
 
-    copyBuffer(stagingBuffer, m_vertexBuffer, bufferSize);
+    Buffer::BufferCreateInfo vertexBufferCreateInfo = stagingBufferCreateInfo;
+    vertexBufferCreateInfo.usage                    = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    vertexBufferCreateInfo.properties               = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
-    vkDestroyBuffer(m_info.logicalDevice->getLogicalDevice(), stagingBuffer, nullptr);
-    vkFreeMemory(m_info.logicalDevice->getLogicalDevice(), stagingBufferMemory, nullptr);
+    if (Buffer::createBuffer(&m_vertexBuffer, vertexBufferCreateInfo) != 0)
+    {
+        Logger::printError("Mesh::createVertexBuffer", "createBuffer[vertexBuffer] failed!");
+
+        return 1;
+    }
+
+    stagingBuffer.copyToBuffer(&m_vertexBuffer);
+
+    stagingBuffer.clean();
 
     return 0;
 }
@@ -63,107 +66,39 @@ int Mesh::createIndexBuffer()
 {
     VkDeviceSize bufferSize = sizeof(m_info.indices[0]) * m_info.indices.size();
 
-    VkBuffer        stagingBuffer;
-    VkDeviceMemory  stagingBufferMemory;
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+    Buffer stagingBuffer;
 
-    void* data;
-    vkMapMemory(m_info.logicalDevice->getLogicalDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+    Buffer::BufferCreateInfo stagingBufferCreateInfo = {};
+    stagingBufferCreateInfo.physicalDevice           = m_info.physicalDevice;
+    stagingBufferCreateInfo.logicalDevice            = m_info.logicalDevice;
+    stagingBufferCreateInfo.commandPool              = m_info.commandPool;
+    stagingBufferCreateInfo.size                     = bufferSize;
+    stagingBufferCreateInfo.usage                    = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+    stagingBufferCreateInfo.properties               = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
-        memcpy(data, m_info.indices.data(), (size_t) bufferSize);
-
-    vkUnmapMemory(m_info.logicalDevice->getLogicalDevice(), stagingBufferMemory);
-
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_indexBuffer, m_indexBufferMemory);
-
-    copyBuffer(stagingBuffer, m_indexBuffer, bufferSize);
-
-    vkDestroyBuffer(m_info.logicalDevice->getLogicalDevice(), stagingBuffer, nullptr);
-    vkFreeMemory(m_info.logicalDevice->getLogicalDevice(), stagingBufferMemory, nullptr);
-
-    return 0;
-}
-
-void Mesh::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
-{
-    VkBufferCreateInfo bufferCreateInfo = {};
-    bufferCreateInfo.sType              = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferCreateInfo.size               = size;
-    bufferCreateInfo.usage              = usage;
-    bufferCreateInfo.sharingMode        = VK_SHARING_MODE_EXCLUSIVE;
-
-    if (vkCreateBuffer(m_info.logicalDevice->getLogicalDevice(), &bufferCreateInfo, nullptr, &buffer) != VK_SUCCESS)
+    if (Buffer::createBuffer(&stagingBuffer, stagingBufferCreateInfo) != 0)
     {
-        Logger::printError("Mesh::createBuffer", "vkCreateBuffer failed!");
+        Logger::printError("Mesh::createIndexBuffer", "createBuffer[stagingBuffer] failed!");
+
+        return 1;
     }
 
-    VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(m_info.logicalDevice->getLogicalDevice(), buffer, &memRequirements);
+    stagingBuffer.copyData(m_info.indices);
 
-    VkMemoryAllocateInfo allocInfo  = {};
-    allocInfo.sType                 = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize        = memRequirements.size;
-    allocInfo.memoryTypeIndex       = findMemoryType(memRequirements.memoryTypeBits, properties);
+    Buffer::BufferCreateInfo indexBufferCreateInfo  = stagingBufferCreateInfo;
+    indexBufferCreateInfo.usage                     = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+    indexBufferCreateInfo.properties                = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
-    if (vkAllocateMemory(m_info.logicalDevice->getLogicalDevice(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
+    if (Buffer::createBuffer(&m_indexBuffer, indexBufferCreateInfo) != 0)
     {
-        Logger::printError("Mesh::createBuffer", "vkAllocateMemory failed!");
+        Logger::printError("Mesh::createIndexBuffer", "createBuffer[indexBuffer] failed!");
+
+        return 1;
     }
 
-    vkBindBufferMemory(m_info.logicalDevice->getLogicalDevice(), buffer, bufferMemory, 0);
-}
+    stagingBuffer.copyToBuffer(&m_indexBuffer);
 
-void Mesh::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
-{
-    VkCommandBufferAllocateInfo allocInfo = {};
-    allocInfo.sType                       = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    allocInfo.level                       = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocInfo.commandPool                 = m_info.commandPool->getCommandPool();
-    allocInfo.commandBufferCount          = 1;
-
-    VkCommandBuffer commandBuffer;
-    vkAllocateCommandBuffers(m_info.logicalDevice->getLogicalDevice(), &allocInfo, &commandBuffer);
-
-    VkCommandBufferBeginInfo beginInfo  = {};
-    beginInfo.sType                     = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    beginInfo.flags                     = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-    vkBeginCommandBuffer(commandBuffer, &beginInfo);
-
-    VkBufferCopy copyRegion = {};
-    copyRegion.srcOffset    = 0;
-    copyRegion.dstOffset    = 0;
-    copyRegion.size         = size;
-
-    vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-
-    vkEndCommandBuffer(commandBuffer);
-
-    VkSubmitInfo submitInfo       = {};
-    submitInfo.sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers    = &commandBuffer;
-
-    vkQueueSubmit(m_info.logicalDevice->getTransferQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-    vkQueueWaitIdle(m_info.logicalDevice->getTransferQueue());
-
-    vkFreeCommandBuffers(m_info.logicalDevice->getLogicalDevice(), m_info.commandPool->getCommandPool(), 1, &commandBuffer);
-}
-
-uint32_t Mesh::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
-{
-    VkPhysicalDeviceMemoryProperties memProperties;
-    vkGetPhysicalDeviceMemoryProperties(m_info.physicalDevice->getPhysicalDevice(), &memProperties);
-
-    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
-    {
-        if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties))
-        {
-            return i;
-        }
-    }
-
-    Logger::printError("Mesh::findMemoryType", "No memory type can be used for the buffer!");
+    stagingBuffer.clean();
 
     return 0;
 }
@@ -172,7 +107,7 @@ int Mesh::createMesh(Mesh* mesh, const MeshCreateInfo& createInfo)
 {
     mesh->setData(createInfo);
 
-    return  mesh->createMesh() +
+    return  mesh->createVertexBuffer() +
             mesh->createIndexBuffer();
 }
 

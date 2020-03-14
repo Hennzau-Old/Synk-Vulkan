@@ -80,6 +80,11 @@ PhysicalDevice::QueueFamilyIndices PhysicalDevice::findQueueFamilies(const VkPhy
         i++;
     }
 
+    if (!indices.transferFamily.has_value())
+    {
+        indices.transferFamily = indices.graphicsFamily;
+    }
+
     return indices;
 }
 

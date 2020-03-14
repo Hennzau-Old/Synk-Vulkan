@@ -20,7 +20,7 @@ void drawAll(CommandBuffers* commandBuffers)
 {
     std::vector<VkBuffer> vertexBuffers =
     {
-        mesh.getVertexBuffer()
+        mesh.getVertexBuffer().getBuffer()
     };
 
     for (size_t i = 0; i < scene.getFramebuffers().size(); i++)
@@ -31,7 +31,7 @@ void drawAll(CommandBuffers* commandBuffers)
                 commandBuffers->bindPipeline(i, scene.getPipeline());
 
                 commandBuffers->bindVertexBuffer(i, vertexBuffers);
-                commandBuffers->bindIndexBuffer(i, mesh.getIndexBuffer());
+                commandBuffers->bindIndexBuffer(i, mesh.getIndexBuffer().getBuffer());
                 commandBuffers->draw(i, 12);
 
             commandBuffers->endRenderPass(i);
@@ -55,7 +55,7 @@ void init()
     {
         Logger::printError("main::init", "createCoreComponents failed!");
     }
-    
+
     /* commandpool transfer */
 
     CommandPool transferCommandPool;
@@ -134,7 +134,7 @@ void init()
     attributeDescriptions[1].binding                                          = 0;
     attributeDescriptions[1].location                                         = 1;
     attributeDescriptions[1].format                                           = VK_FORMAT_R32G32B32A32_SFLOAT;
-    attributeDescriptions[1].offset                                           = 3 * sizeof(float);     //offset of vertex positions
+    attributeDescriptions[1].offset                                           = 3 * sizeof(float);     //offset of colors
 
     /* shaders */
 

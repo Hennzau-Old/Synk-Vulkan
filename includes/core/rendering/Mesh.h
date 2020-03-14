@@ -11,6 +11,7 @@
 #include "core/LogicalDevice.h"
 
 #include "core/rendering/CommandPool.h"
+#include "core/rendering/buffers/Buffer.h"
 
 class Mesh
 {
@@ -42,11 +43,8 @@ class Mesh
 
         static int                createMesh(Mesh* mesh, const MeshCreateInfo& createInfo);
 
-        inline VkBuffer&          getVertexBuffer       () { return m_vertexBuffer;       }
-        inline VkDeviceMemory&    getVertexBufferMemory () { return m_vertexBufferMemory; }
-
-        inline VkBuffer&          getIndexBuffer      () { return m_indexBuffer;        }
-        inline VkDeviceMemory&    getIndexBufferMemory() { return m_indexBufferMemory;  }
+        inline Buffer&            getVertexBuffer () { return m_vertexBuffer; }
+        inline Buffer&            getIndexBuffer  () { return m_indexBuffer;  }
 
         MeshCreateInfo&           getInfo();
 
@@ -58,21 +56,13 @@ class Mesh
 
         /* functions */
 
-        int                       createMesh();
+        int                       createVertexBuffer();
         int                       createIndexBuffer();
-
-        void                      createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-        void                      copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-
-        uint32_t                  findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
         /* variables */
 
-        VkBuffer                  m_vertexBuffer;
-        VkDeviceMemory            m_vertexBufferMemory;
-
-        VkBuffer                  m_indexBuffer;
-        VkDeviceMemory            m_indexBufferMemory;
+        Buffer                    m_vertexBuffer;
+        Buffer                    m_indexBuffer;
 
         MeshCreateInfo            m_info;
 };
