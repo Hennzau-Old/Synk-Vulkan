@@ -144,8 +144,8 @@ void Mesh::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers    = &commandBuffer;
 
-    vkQueueSubmit(m_info.logicalDevice->getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-    vkQueueWaitIdle(m_info.logicalDevice->getGraphicsQueue());
+    vkQueueSubmit(m_info.logicalDevice->getTransferQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(m_info.logicalDevice->getTransferQueue());
 
     vkFreeCommandBuffers(m_info.logicalDevice->getLogicalDevice(), m_info.commandPool->getCommandPool(), 1, &commandBuffer);
 }

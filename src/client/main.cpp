@@ -55,7 +55,7 @@ void init()
     {
         Logger::printError("main::init", "createCoreComponents failed!");
     }
-
+    
     /* commandpool transfer */
 
     CommandPool transferCommandPool;
@@ -63,7 +63,7 @@ void init()
     CommandPool::CommandPoolCreateInfo commandPoolCreateInfo  = {};
     commandPoolCreateInfo.physicalDevice                      = &coreComponents.getPhysicalDevice();
     commandPoolCreateInfo.logicalDevice                       = &coreComponents.getLogicalDevice();
-    commandPoolCreateInfo.queueFamilyIndex                    = coreComponents.getPhysicalDevice().getQueueFamilies().graphicsFamily.value();
+    commandPoolCreateInfo.queueFamilyIndex                    = coreComponents.getPhysicalDevice().getQueueFamilies().transferFamily.value();
 
     if (CommandPool::createCommandPool(&transferCommandPool, commandPoolCreateInfo) != 0)
     {

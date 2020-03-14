@@ -36,9 +36,10 @@ class LogicalDevice
 
         static int                createLogicalDevice(LogicalDevice* logicalDevice, const LogicalDeviceCreateInfo& createInfo);
 
-        inline VkDevice&          getLogicalDevice() { return m_logicalDevice; }
-        inline VkQueue&           getGraphicsQueue() { return m_graphicsQueue; }
-        inline VkQueue&           getPresentQueue () { return m_presentQueue; }
+        inline VkDevice&          getLogicalDevice() { return m_logicalDevice;  }
+        inline VkQueue&           getGraphicsQueue() { return m_graphicsQueue;  }
+        inline VkQueue&           getPresentQueue () { return m_presentQueue;   }
+        inline VkQueue&           getTransferQueue() { return m_transferQueue;  }
 
         LogicalDeviceCreateInfo&  getInfo();
 
@@ -58,6 +59,7 @@ class LogicalDevice
 
         VkQueue                   m_graphicsQueue;
         VkQueue                   m_presentQueue;
+        VkQueue                   m_transferQueue;
 
         LogicalDeviceCreateInfo   m_info;
 };

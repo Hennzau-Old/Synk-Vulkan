@@ -29,7 +29,7 @@ class Mesh
             CommandPool*            commandPool     = nullptr;
 
             std::vector<float>      vertices;
-            std::vector<uint16_t>        indices;
+            std::vector<uint16_t>   indices;
         };
 
         /* functions */

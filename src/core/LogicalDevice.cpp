@@ -36,6 +36,7 @@ int LogicalDevice::createLogicalDevice()
     {
         indices.graphicsFamily.value(),
         indices.presentFamily.value(),
+        indices.transferFamily.value()
     };
 
     float queuePriority = 1.0f;
@@ -79,6 +80,7 @@ int LogicalDevice::createLogicalDevice()
 
     vkGetDeviceQueue(m_logicalDevice, indices.graphicsFamily.value(), 0, &m_graphicsQueue);
     vkGetDeviceQueue(m_logicalDevice, indices.presentFamily.value(), 0, &m_presentQueue);
+    vkGetDeviceQueue(m_logicalDevice, indices.transferFamily.value(), 0, &m_transferQueue);
 
     return 0;
 }
