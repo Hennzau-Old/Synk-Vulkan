@@ -113,5 +113,5 @@ int Mesh::createMesh(Mesh* mesh, const MeshCreateInfo& createInfo)
 
 Mesh::MeshCreateInfo& Mesh::getInfo()
 {
-  return m_info;
+    return m_info;
 }
