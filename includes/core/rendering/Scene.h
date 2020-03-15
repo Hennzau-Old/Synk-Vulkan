@@ -40,6 +40,7 @@ class Scene
             RenderPass::RenderPassAttachmentsInfo renderPassAttachmentsInfo;
             Pipeline::RasterizationInfo           rasterizationInfo;
             Pipeline::VertexInputInfo             vertexInputInfo;
+            Pipeline::DescriptorSetLayoutInfo     descriptorSetLayoutInfo;
             WindowResizeManager::FnPtr            drawFunction;
         };
 

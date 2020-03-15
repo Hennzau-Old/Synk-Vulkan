@@ -8,6 +8,8 @@
 #include "core/rendering/Mesh.h"
 #include "core/rendering/Scene.h"
 
+#include "core/rendering/buffers/UniformBuffer.h"
+
 const int 				FRAME_CAP = 6666;
 const int 				TICK_CAP = 60;
 
@@ -15,6 +17,8 @@ CoreComponents    coreComponents;
 
 Mesh              mesh;
 Scene             scene;
+
+std::vector<UniformBuffer<maths::mat4>> UBOs;
 
 void drawAll(CommandBuffers* commandBuffers)
 {
@@ -112,6 +116,34 @@ void init()
         Logger::printSuccess("main::init", "createMesh succeed!");
     }
 
+    /* uniforms */
+
+    std::vector<maths::mat4> testObjects =
+    {
+        maths::mat4::identity(),
+        maths::mat4::identity(),
+        maths::mat4::identity()
+    };
+
+    UBOs.resize(coreComponents.getSwapChain().getImageViews().size());
+
+    UniformBuffer<maths::mat4>::UniformBufferCreateInfo uniformBufferCreateInfo = {};
+    uniformBufferCreateInfo.physicalDevice      = &coreComponents.getPhysicalDevice();
+    uniformBufferCreateInfo.logicalDevice       = &coreComponents.getLogicalDevice();
+    uniformBufferCreateInfo.commandPool         = &transferCommandPool;
+    uniformBufferCreateInfo.objects             = testObjects;
+
+    for (unsigned int i = 0; i < coreComponents.getSwapChain().getImageViews().size(); i++)
+    {
+        if (UniformBuffer<maths::mat4>::createUniformBuffer(&UBOs[i], uniformBufferCreateInfo) != 0)
+        {
+            Logger::printError("main::init", "createUniformBuffer[" + std::to_string(i) + "] failed!");
+        } else
+        {
+            Logger::printSuccess("main::init", "createUniformBuffer[" + std::to_string(i) + "] succeed!");
+        }
+    }
+
     transferCommandPool.clean();
 
     /*vertex binding */
@@ -166,6 +198,19 @@ void init()
     vertexInputInfo.vertexBindingDescription    = vertexBindingDescription;
     vertexInputInfo.vertexAttributeDescriptions = attributeDescriptions;
 
+    std::vector<VkDescriptorSetLayoutBinding> descriptorSetLayoutBindings(1);
+
+    /* UBO */
+
+    descriptorSetLayoutBindings[0].binding            = 0;
+    descriptorSetLayoutBindings[0].descriptorType     = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptorSetLayoutBindings[0].descriptorCount    = 1;
+    descriptorSetLayoutBindings[0].stageFlags         = VK_SHADER_STAGE_VERTEX_BIT;
+    descriptorSetLayoutBindings[0].pImmutableSamplers = nullptr;
+
+    Pipeline::DescriptorSetLayoutInfo descriptorsInfo = {};
+    descriptorsInfo.descriptors                       = descriptorSetLayoutBindings;
+
     /* scene */
 
     Scene::SceneCreateInfo sceneCreateInfo      = {};
@@ -174,6 +219,7 @@ void init()
     sceneCreateInfo.renderPassAttachmentsInfo   = renderPassAttachmentsInfo;
     sceneCreateInfo.rasterizationInfo           = rasterizationInfo;
     sceneCreateInfo.vertexInputInfo             = vertexInputInfo;
+    sceneCreateInfo.descriptorSetLayoutInfo     = descriptorsInfo;
     sceneCreateInfo.drawFunction                = drawAll;
 
     if (Scene::createScene(&scene, sceneCreateInfo) != 0)
@@ -204,6 +250,11 @@ void clean()
     scene.clean();
 
     mesh.clean();
+
+    for (auto ubo : UBOs)
+    {
+        ubo.clean();
+    }
 
     coreComponents.clean();
 

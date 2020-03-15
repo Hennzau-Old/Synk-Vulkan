@@ -213,9 +213,9 @@ vec2 vec2::operator /=(const vec2& v)
     return *this;
 }
 
-float* vec2::values()
+std::vector<float> vec2::values()
 {
-    return new float[2]
+    return std::vector<float>
     {
         x, y
     };

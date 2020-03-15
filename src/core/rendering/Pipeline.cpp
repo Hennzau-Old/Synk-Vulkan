@@ -19,6 +19,10 @@ void Pipeline::clean()
     vkDestroyPipelineLayout(m_info.logicalDevice->getLogicalDevice(), m_pipelineLayout, nullptr);
 
     Logger::printInfo("Pipeline::clean", "vkDestroyPipelineLayout!");
+
+    vkDestroyDescriptorSetLayout(m_info.logicalDevice->getLogicalDevice(), m_descriptorSetLayout, nullptr);
+
+    Logger::printInfo("Pipeline::clean", "vkDestroyDescriptorSetLayout!");
 }
 
 void Pipeline::setData(const PipelineCreateInfo& createInfo)
@@ -117,10 +121,24 @@ int Pipeline::createPipeline()
     dynamicState.dynamicStateCount                = 2;
     dynamicState.pDynamicStates                   = dynamicStates;
 
+    uint32_t bindingCount = static_cast<uint32_t>(m_info.descriptorsInfo.descriptors.size());
+
+    VkDescriptorSetLayoutCreateInfo descriptorSetLayoutInfo = {};
+    descriptorSetLayoutInfo.sType                           = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    descriptorSetLayoutInfo.bindingCount                    = bindingCount;
+    descriptorSetLayoutInfo.pBindings                       = m_info.descriptorsInfo.descriptors.data();
+
+    if (vkCreateDescriptorSetLayout(m_info.logicalDevice->getLogicalDevice(), &descriptorSetLayoutInfo, nullptr, &m_descriptorSetLayout) != VK_SUCCESS)
+    {
+        Logger::printError("Pipeline::createPipeline", "vkCreateDescriptorSetLayout failed!");
+
+        return 1;
+    }
+
     VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
     pipelineLayoutCreateInfo.sType                      = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutCreateInfo.setLayoutCount             = 0;
-    pipelineLayoutCreateInfo.pSetLayouts                = nullptr;
+    pipelineLayoutCreateInfo.setLayoutCount             = 1;
+    pipelineLayoutCreateInfo.pSetLayouts                = &m_descriptorSetLayout;
     pipelineLayoutCreateInfo.pushConstantRangeCount     = 0;
     pipelineLayoutCreateInfo.pPushConstantRanges        = nullptr;
 

@@ -86,6 +86,7 @@ int Scene::createPipeline()
     pipelineCreateInfo.renderPass                   = &m_renderPass;
     pipelineCreateInfo.rasterizationInfo            = m_info.rasterizationInfo;
     pipelineCreateInfo.vertexInputInfo              = m_info.vertexInputInfo;
+    pipelineCreateInfo.descriptorsInfo              = m_info.descriptorSetLayoutInfo;
 
     if (Pipeline::createPipeline(&m_pipeline, pipelineCreateInfo) != 0)
     {

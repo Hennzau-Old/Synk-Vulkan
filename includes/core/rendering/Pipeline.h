@@ -35,15 +35,21 @@ class Pipeline
             std::vector<VkVertexInputAttributeDescription>  vertexAttributeDescriptions;
         };
 
+        struct DescriptorSetLayoutInfo
+        {
+            std::vector<VkDescriptorSetLayoutBinding>       descriptors;
+        };
+
         struct PipelineCreateInfo
         {
-            LogicalDevice*        logicalDevice = nullptr;
-            SwapChain*            swapChain     = nullptr;
-            Shader*               shader        = nullptr;
-            RenderPass*           renderPass    = nullptr;
+            LogicalDevice*          logicalDevice = nullptr;
+            SwapChain*              swapChain     = nullptr;
+            Shader*                 shader        = nullptr;
+            RenderPass*             renderPass    = nullptr;
 
-            RasterizationInfo     rasterizationInfo;
-            VertexInputInfo       vertexInputInfo;
+            RasterizationInfo       rasterizationInfo;
+            VertexInputInfo         vertexInputInfo;
+            DescriptorSetLayoutInfo descriptorsInfo;
         };
 
         /* functions */
@@ -56,8 +62,9 @@ class Pipeline
 
         static int                createPipeline(Pipeline* pipeline, const PipelineCreateInfo& createInfo);
 
-        inline VkPipeline&        getPipeline       () { return m_pipeline; }
-        inline VkPipelineLayout&  getPipelineLayout () { return m_pipelineLayout; }
+        inline VkPipeline&            getPipeline           () { return m_pipeline; }
+        inline VkPipelineLayout&      getPipelineLayout     () { return m_pipelineLayout; }
+        inline VkDescriptorSetLayout& getDescriptorSetLayout() {return m_descriptorSetLayout; }
 
         PipelineCreateInfo&       getInfo();
 
@@ -75,6 +82,7 @@ class Pipeline
 
         VkPipeline                  m_pipeline;
         VkPipelineLayout            m_pipelineLayout;
+        VkDescriptorSetLayout       m_descriptorSetLayout;
 
         PipelineCreateInfo          m_info;
 };

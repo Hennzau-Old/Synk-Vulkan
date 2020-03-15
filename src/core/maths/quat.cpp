@@ -150,9 +150,9 @@ mat4 quat::toMatrix()
   	return mat4::rotate(forward, up, right);
 }
 
-float* quat::values()
+std::vector<float> quat::values()
 {
-    return new float[4]
+    return std::vector<float>
     {
         x, y, z, w
     };

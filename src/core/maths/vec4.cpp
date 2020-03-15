@@ -251,9 +251,9 @@ vec4 vec4::operator /=(const vec4& v)
     return *this;
 }
 
-float* vec4::values()
+std::vector<float> vec4::values()
 {
-    return new float[4]
+    return std::vector<float>
     {
         x, y, z, w
     };

@@ -289,9 +289,9 @@ vec3 vec3::operator /=(const vec3& v)
     return *this;
 }
 
-float* vec3::values()
+std::vector<float> vec3::values()
 {
-    return new float[3]
+    return std::vector<float>
     {
         x, y, z
     };

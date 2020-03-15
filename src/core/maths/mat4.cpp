@@ -307,9 +307,9 @@ float mat4::mat(const int x, const int y) const
     return m_matrix[x + y * 4];
 }
 
-float* mat4::values()
+std::vector<float> mat4::values()
 {
-    return new float[4 * 4]
+    return std::vector<float>
     {
         m_matrix[0], m_matrix[1], m_matrix[2], m_matrix[3],
         m_matrix[4], m_matrix[5], m_matrix[6], m_matrix[7],

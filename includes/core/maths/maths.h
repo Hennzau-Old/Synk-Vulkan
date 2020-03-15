@@ -3,6 +3,8 @@
 #include <math.h>
 #include <string>
 
+#include <vector>
+
 #define PI 3.14159265358979323846264338327950288419716939937510582
 
 #define TO_RADIANS(x) (float) (x * PI / 180.0f)
@@ -81,7 +83,7 @@ namespace maths
             vec2 operator /(const vec2& v) const;
             vec2 operator /=(const vec2& v);
 
-            float* values();
+            std::vector<float> values();
 
             float x;
             float y;
@@ -141,7 +143,7 @@ namespace maths
             vec3 operator /(const vec3& v) const;
             vec3 operator /=(const vec3& v);
 
-            float* values();
+            std::vector<float> values();
 
             float x;
             float y;
@@ -193,7 +195,7 @@ namespace maths
             vec4 operator /(const vec4& v) const;
             vec4 operator /=(const vec4& v);
 
-            float* values();
+            std::vector<float> values();
 
             float x;
             float y;
@@ -227,7 +229,7 @@ namespace maths
 
             float mat(const int x, const int y) const;
 
-            float* values();
+            std::vector<float> values();
 
             float m_matrix[4 * 4];
     };
@@ -261,7 +263,7 @@ namespace maths
 
             mat4 toMatrix();
 
-            float* values();
+            std::vector<float> values();
 
             float x;
             float y;
